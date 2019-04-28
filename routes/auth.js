@@ -1,6 +1,5 @@
-const {User} = require('../services/database/db');
+const {models} = require('../services/database/db');
 const bcrypt = require('bcryptjs');
-const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const {body, validationResult} = require('express-validator/check');
 
@@ -27,7 +26,7 @@ router.post('/register', [
         return res.status(400).json({errors: errors.array()});
     }
 
-    User
+    models.User
         .count({
             where: {
                 email: req.body.email
@@ -39,7 +38,7 @@ router.post('/register', [
                 throw {code: 400, errors: ['Email Address exists in database.']};
         })
         .then(() => bcrypt.hash(req.body.password, 10))
-        .then((hash) => User.create({
+        .then((hash) => models.User.create({
             name: req.body.name,
             email: req.body.email,
             // TODO #3: set to false if email validation is implemented
@@ -58,7 +57,6 @@ router.post('/register', [
         }))
         .catch(error => {
             console.error(error);
-            console.error(JSON.stringify(error));
             if (!error || !error.code || error.code === 500)
                 res.status(500).json({errors: ['Please ty again. Internal server error.']});
             else
@@ -79,7 +77,7 @@ router.post('/login',
             return res.status(400).json({errors: errors.array()});
         }
 
-        User
+        models.User
             .findOne({
                 where: {
                     email: req.body.email
@@ -91,7 +89,7 @@ router.post('/login',
                     throw {code: 400, errors: ['Username or Password not correct.']};
                 }
                 // TODO #3: Check if email is approved
-                bcrypt.compare(req.body.password, user.password)
+                return bcrypt.compare(req.body.password, user.password)
                     .then(isMatch => {
                         if (isMatch) {
                             const payload = {
@@ -115,7 +113,7 @@ router.post('/login',
                             // TODO #9: log failed login
                             throw {code: 400, errors: ['Username or Password not correct.']};
                         }
-                    })
+                    });
             })
             .catch(error => {
                 console.error(error);

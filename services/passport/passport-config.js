@@ -1,5 +1,5 @@
 const {Strategy, ExtractJwt} = require('passport-jwt');
-const {User} = require('../database/db');
+const {models} = require('../database/db');
 
 require('dotenv').config();
 
@@ -17,8 +17,7 @@ const opts = {
 module.exports = passport => {
     passport.use(
         new Strategy(opts, (payload, done) => {
-            console.log(JSON.stringify(payload));
-            User
+            models.User
                 .findOne({
                     where: {
                         id: payload.sub
