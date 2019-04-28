@@ -1,0 +1,242 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: ILA-Server
+host: ila.dev.kirschbaum.bayern
+schemes:
+  - https
+securityDefinitions:
+  jwt:
+    type: apiKey
+    name: Bearer
+    in: header
+
+tags:
+  - name: Auth
+  - name: Courses
+
+definitions:
+  GenericErrorResponse:
+    type: object
+    properties:
+      errors:
+        type: array
+        items:
+          type: string
+
+  AuthLoginResponse:
+    type: object
+    required:
+      - token
+    properties:
+      token:
+        type: string
+  AuthLoginModel:
+    type: object
+    required:
+      - email
+      - password
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+  AuthRegisterResponse:
+    type: object
+    properties:
+      messages:
+        type: array
+        items:
+          type: string
+  AuthRegisterModel:
+    type: object
+    required:
+      - email
+      - password
+      - name
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      name:
+        type: string
+
+  CourseModel:
+    type: object
+    required:
+      - id
+      - title
+      - ownerId
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+      description:
+        type: string
+      ownerId:
+        type: integer
+  CourseCreateModel:
+    type: object
+    required:
+      - title
+    properties:
+      title:
+        type: string
+      description:
+        type: string
+  CourseUpdateModel:
+    type: object
+    required:
+      - id
+      - title
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+      description:
+        type: string
+
+responses:
+  InternalServerError:
+    description: Internal Server Error
+    schema:
+      $ref: '#/definitions/GenericErrorResponse'
+  Unauthorized:
+    description: User is Unauthorized
+  GenericError:
+    description: A Generic Error Response
+    schema:
+      $ref: '#/definitions/GenericErrorResponse'
+
+paths:
+  /auth/login:
+    post:
+      summary: User login
+      tags:
+        - Auth
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: '#/definitions/AuthLoginModel'
+      responses:
+        200:
+          description: Returns the jwt
+          schema:
+            $ref: '#/definitions/AuthLoginResponse'
+        400:
+          $ref: '#/responses/GenericError'
+        500:
+          $ref: '#/responses/InternalServerError'
+  /auth/register:
+    post:
+      summary: Users can register themselfs
+      tags:
+        - Auth
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: '#/definitions/AuthRegisterModel'
+      responses:
+        200:
+          description: Returns the jwt
+          schema:
+            $ref: '#/definitions/AuthRegisterResponse'
+        400:
+          $ref: '#/responses/GenericError'
+        500:
+          $ref: '#/responses/InternalServerError'
+
+  /course:
+    get:
+      summary: Get a list of all your courses.
+      tags:
+        - Courses
+      responses:
+        200:
+          description: Array of Courses
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CourseModel'
+        500:
+          $ref: '#/responses/InternalServerError'
+    post:
+      summary: Creates a new course.
+      tags:
+        - Courses
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: '#/definitions/CourseCreateModel'
+      responses:
+        200:
+          description: Returns the newly created course.
+          schema:
+            $ref: '#/definitions/CourseModel'
+        400:
+          $ref: '#/responses/GenericError'
+        500:
+          $ref: '#/responses/InternalServerError'
+    put:
+      summary: Update a course
+      tags:
+        - Courses
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: '#/definitions/CourseUpdateModel'
+      responses:
+        200:
+          description: Returns the updated course.
+          schema:
+            $ref: '#/definitions/CourseModel'
+        400:
+          $ref: '#/responses/GenericError'
+        403:
+          description: It's forbidden to update a foreign course.
+          schema:
+            $ref: '#/definitions/GenericErrorResponse'
+        404:
+          description: No course with the id found.
+          schema:
+            $ref: '#/definitions/GenericErrorResponse'
+        500:
+          $ref: '#/responses/InternalServerError'
+    delete:
+      summary: Delete one of your courses.
+      tags:
+        - Courses
+      parameters:
+        - in: "body"
+          name: "id"
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Returns nothing.
+          schema:
+            type: object
+        400:
+          $ref: '#/responses/GenericError'
+        403:
+          description: It's forbidden to delete a foreign course.
+          schema:
+            $ref: '#/definitions/GenericErrorResponse'
+        404:
+          description: No course with the id found.
+          schema:
+            $ref: '#/definitions/GenericErrorResponse'
+        500:
+          $ref: '#/responses/InternalServerError'
