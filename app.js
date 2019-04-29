@@ -4,11 +4,13 @@ const bodyparser = require('body-parser');
 const passport = require('passport');
 const database = require('./services/database/db');
 
-
 // load environment variables
 require('dotenv').config();
 
 const port = process.env.PORT || 3000;
+
+// test database connection
+database.testConnection();
 
 // create express server
 const app = express();
@@ -27,6 +29,7 @@ app.use((req, res, next) => {
 
 // register routes
 app.use('/auth', require('./routes/auth'));
+app.use('/course', passport.authenticate('jwt', {session:false}), require('./routes/cources'));
 
 // Start server
 app.listen(port, err => {

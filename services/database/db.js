@@ -1,5 +1,4 @@
 const Sequelize = require('sequelize');
-const UserModel = require('./models/user')
 
 // load environment variables
 require('dotenv').config();
@@ -9,6 +8,7 @@ const dbHost = process.env.DB_HOST || "localhost";
 const dbDatabase = process.env.DB_DATABASE || "ila";
 const dbUsername = process.env.DB_USERNAME || "root";
 const dbPassword = process.env.DB_PASSWORD || "";
+
 
 const sequelize = new Sequelize(dbDatabase, dbUsername, dbPassword, {
     host: dbHost,
@@ -21,17 +21,29 @@ const sequelize = new Sequelize(dbDatabase, dbUsername, dbPassword, {
     }
 });
 
-const User = UserModel(sequelize, Sequelize);
+const testConnection = () => {
+    sequelize
+        .authenticate()
+        .catch((error) => {
+            console.error('Could not connect to the database');
+            console.error(JSON.stringify(error));
+            process.exit(1);
+        });
+};
 
-sequelize
-    .authenticate()
-    .catch((error) => {
-        console.error('Could not connect to the database');
-        console.error(JSON.stringify(error));
-        process.exit(1);
-    })
+const models = {
+    User: sequelize.import('./user'),
+    Course: sequelize.import('./course'),
+};
 
+Object.keys(models).forEach(key => {
+    if ('associate' in models[key]) {
+        models[key].associate(models);
+    }
+});
 
 module.exports = {
-    User
-}
+    sequelize,
+    models,
+    testConnection
+};
