@@ -77,6 +77,26 @@ definitions:
         type: string
       ownerId:
         type: integer
+      tokens:
+        type: array
+        items:
+          $ref: '#/definitions/TokenModel'
+  TokenModel:
+    type: object
+    required:
+      - id
+      - token
+      - enabled
+      - courseId
+    properties:
+      id:
+        type: integer
+      token:
+        type: string
+      enabled:
+        type: boolean
+      courseId:
+        type: integer
   CourseCreateModel:
     type: object
     required:
@@ -158,6 +178,8 @@ paths:
       summary: Get a list of all your courses.
       tags:
         - Courses
+      security:
+        - jwt: []
       responses:
         200:
           description: Array of Courses
@@ -171,6 +193,8 @@ paths:
       summary: Creates a new course.
       tags:
         - Courses
+      security:
+        - jwt: []
       parameters:
         - in: "body"
           name: "body"
@@ -190,6 +214,8 @@ paths:
       summary: Update a course
       tags:
         - Courses
+      security:
+        - jwt: []
       parameters:
         - in: "body"
           name: "body"
@@ -217,6 +243,8 @@ paths:
       summary: Delete one of your courses.
       tags:
         - Courses
+      security:
+        - jwt: []
       parameters:
         - in: "body"
           name: "id"
@@ -236,6 +264,90 @@ paths:
             $ref: '#/definitions/GenericErrorResponse'
         404:
           description: No course with the id found.
+          schema:
+            $ref: '#/definitions/GenericErrorResponse'
+        500:
+          $ref: '#/responses/InternalServerError'
+  /course/tokenGenerate:
+    post:
+      summary: Creates a new course.
+      tags:
+        - Courses
+      security:
+        - jwt: []
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: Id of the course.
+      responses:
+        200:
+          description: Returns the newly created token.
+          schema:
+            $ref: '#/definitions/TokenModel'
+        400:
+          $ref: '#/responses/GenericError'
+        403:
+          description: It's forbidden to create a token for a foreign course.
+          schema:
+            $ref: '#/definitions/GenericErrorResponse'
+        404:
+          description: No course with the id found.
+          schema:
+            $ref: '#/definitions/GenericErrorResponse'
+        500:
+          $ref: '#/responses/InternalServerError'
+  /course/join:
+    post:
+      description: Joins to a course
+      tags:
+        - Courses
+      security:
+        - jwt: []
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            type: object
+            required:
+              - courseId
+              - token
+            properties:
+              courseId:
+                type: integer
+              token:
+                type: string
+      responses:
+        200:
+          description: Course joined
+        400:
+          $ref: '#/responses/GenericError'
+        404:
+          description: Couldn't find a course with the token.
+          schema:
+            $ref: '#/definitions/GenericErrorResponse'
+        500:
+          $ref: '#/responses/InternalServerError'
+  /course/leave:
+    delete:
+      description: Leaves a course
+      tags:
+        - Courses
+      security:
+        - jwt: []
+      responses:
+        200:
+          description: Course left.
+        400:
+          $ref: '#/responses/GenericError'
+        404:
+          description: Couldn't find a course.
           schema:
             $ref: '#/definitions/GenericErrorResponse'
         500:
