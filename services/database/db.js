@@ -34,6 +34,7 @@ const testConnection = () => {
 const models = {
     User: sequelize.import('./user'),
     Course: sequelize.import('./course'),
+    CourseToken: sequelize.import('./coursetoken'),
 };
 
 Object.keys(models).forEach(key => {

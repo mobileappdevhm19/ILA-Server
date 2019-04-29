@@ -14,7 +14,13 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     User.associate = models => {
-        User.hasMany(models.Course, { onDelete: 'CASCADE', as: ' owner', foreignKey: 'ownerId' });
+        User.hasMany(models.Course, {onDelete: 'CASCADE', foreignKey: 'ownerId'});
+        User.belongsToMany(models.Course, {
+            as: 'MemberCourses',
+            through: 'course_members',
+            foreignKey: 'userId',
+            timestamps: false
+        });
     };
 
     return User;
