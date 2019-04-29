@@ -1,0 +1,32 @@
+version: '3.3'
+
+services:
+  ila-test-server:
+    image: ila-server
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_PORT=3306
+      - DB_HOST=ila-mysql
+      - DB_DATABASE=ila
+      - DB_USERNAME=from ila-mysql
+      - DB_PASSWORD=from ila-mysql
+      - SECRET=asdsdfwe
+      - JWT_AUDIENCE=change-me
+      - JWT_ISSUER=change-me
+
+  ila-mysql:
+    image: mariadb
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=change-me
+      - MYSQL_DATABASE=ila
+      - MYSQL_USER=change-me
+      - MYSQL_PASSWORD=change-me
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
