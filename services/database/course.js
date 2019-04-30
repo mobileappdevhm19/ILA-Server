@@ -16,7 +16,10 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     Course.associate = models => {
-        Course.belongsTo(models.User, {foreignKey: 'ownerId'});
+        Course.belongsTo(models.User, {foreignKey: 'ownerId', as: 'owner'});
+        Course.belongsToMany(models.User, {as: 'Members', through: 'course_members', foreignKey: 'courseId',
+            timestamps: false});
+        Course.hasMany(models.CourseToken, {onDelete: 'CASCADE', foreignKey: 'courseId'});
     };
 
     return Course;
