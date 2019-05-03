@@ -30,6 +30,7 @@ app.use((req, res, next) => {
 // register routes
 app.use('/auth', require('./routes/auth'));
 app.use('/course', passport.authenticate('jwt', {session:false}), require('./routes/cources'));
+app.use('/lecture', passport.authenticate('jwt', {session:false}), require('./routes/lectures'));
 
 // Start server
 app.listen(port, err => {

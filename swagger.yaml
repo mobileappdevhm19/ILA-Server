@@ -14,6 +14,7 @@ securityDefinitions:
 tags:
   - name: Auth
   - name: Courses
+  - name: Lectures
 
 definitions:
   GenericErrorResponse:
@@ -118,6 +119,63 @@ definitions:
         type: string
       description:
         type: string
+
+  LectureModel:
+    type: object
+    required:
+      - id
+      - topic
+      - visible
+      - courseId
+    properties:
+      id:
+        type: integer
+      topic:
+        type: string
+      description:
+        type: string
+      visible:
+        type: boolean
+      courseId:
+        type: integer
+  LectureCreateModel:
+    type: object
+    required:
+      - topic
+      - visible
+      - courseId
+    properties:
+      topic:
+        type: string
+      description:
+        type: string
+      visible:
+        type: boolean
+      courseId:
+        type: integer
+  LectureUpdateModel:
+    type: object
+    required:
+      - id
+      - title
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+      description:
+        type: string
+  LectureVisibleModel:
+    type: object
+    required:
+      - id
+      - visible
+    properties:
+      id:
+        type: integer
+      visible:
+        type: boolean
+
 
 responses:
   InternalServerError:
@@ -348,6 +406,143 @@ paths:
           $ref: '#/responses/GenericError'
         404:
           description: Couldn't find a course.
+          schema:
+            $ref: '#/definitions/GenericErrorResponse'
+        500:
+          $ref: '#/responses/InternalServerError'
+
+  /lecture:
+    get:
+      summary: Get a list of all lectures in the specific course.
+      tags:
+        - Lectures
+      security:
+        - jwt: []
+      parameters:
+        - in: path
+          name: courseId
+          type: integer
+          required: true
+      responses:
+        200:
+          description: Array of Lectures
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/LectureModel'
+        400:
+          $ref: '#/responses/GenericError'
+        500:
+          $ref: '#/responses/InternalServerError'
+    post:
+      summary: Creates a new lecture.
+      tags:
+        - Lectures
+      security:
+        - jwt: []
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: '#/definitions/LectureCreateModel'
+      responses:
+        200:
+          description: Returns the newly created lecture.
+          schema:
+            $ref: '#/definitions/LectureModel'
+        400:
+          $ref: '#/responses/GenericError'
+        403:
+          $ref: '#/responses/GenericError'
+        404:
+          $ref: '#/responses/GenericError'
+        500:
+          $ref: '#/responses/InternalServerError'
+    put:
+      summary: Update a lecture
+      tags:
+        - Lectures
+      security:
+        - jwt: []
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: '#/definitions/LectureUpdateModel'
+      responses:
+        200:
+          description: Returns the updated lecture.
+          schema:
+            $ref: '#/definitions/LectureModel'
+        400:
+          $ref: '#/responses/GenericError'
+        403:
+          description: It's forbidden to update a foreign courses lecture.
+          schema:
+            $ref: '#/definitions/GenericErrorResponse'
+        404:
+          description: No course with the id found.
+          schema:
+            $ref: '#/definitions/GenericErrorResponse'
+        500:
+          $ref: '#/responses/InternalServerError'
+    delete:
+      summary: Delete one of your lectures.
+      tags:
+        - Lectures
+      security:
+        - jwt: []
+      parameters:
+        - in: "body"
+          name: "id"
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Returns nothing.
+          schema:
+            type: object
+        400:
+          $ref: '#/responses/GenericError'
+        403:
+          description: It's forbidden to delete a foreign courses lecture.
+          schema:
+            $ref: '#/definitions/GenericErrorResponse'
+        404:
+          description: No lecture with the id found.
+          schema:
+            $ref: '#/definitions/GenericErrorResponse'
+        500:
+          $ref: '#/responses/InternalServerError'
+  /lecture/visible:
+    put:
+      summary: Updates a lectures visibility
+      tags:
+        - Lectures
+      security:
+        - jwt: []
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: '#/definitions/LectureVisibleModel'
+      responses:
+        200:
+          description: Returns the updated lecture.
+          schema:
+            $ref: '#/definitions/LectureModel'
+        400:
+          $ref: '#/responses/GenericError'
+        403:
+          description: It's forbidden to update a foreign courses lecture.
+          schema:
+            $ref: '#/definitions/GenericErrorResponse'
+        404:
+          description: No course with the id found.
           schema:
             $ref: '#/definitions/GenericErrorResponse'
         500:
