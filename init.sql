@@ -16,8 +16,19 @@ CREATE TABLE IF NOT EXISTS `courses` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 
 -- Daten Export vom Benutzer nicht ausgewählt
--- Exportiere Struktur von Tabelle ila.coursetokens
-CREATE TABLE IF NOT EXISTS `coursetokens` (
+-- Exportiere Struktur von Tabelle ila.course_members
+CREATE TABLE IF NOT EXISTS `course_members` (
+  `userId` int(11) unsigned NOT NULL,
+  `courseID` int(11) unsigned NOT NULL,
+  PRIMARY KEY (`userId`,`courseID`),
+  KEY `FKcourseId` (`courseID`),
+  CONSTRAINT `FKcourseId` FOREIGN KEY (`courseID`) REFERENCES `courses` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FKuserId` FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Daten Export vom Benutzer nicht ausgewählt
+-- Exportiere Struktur von Tabelle ila.course_tokens
+CREATE TABLE IF NOT EXISTS `course_tokens` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `token` varchar(10) NOT NULL,
   `enabled` tinyint(4) NOT NULL,
@@ -25,7 +36,20 @@ CREATE TABLE IF NOT EXISTS `coursetokens` (
   PRIMARY KEY (`id`),
   KEY `courseId` (`courseId`),
   CONSTRAINT `FKcorse_corsetokens` FOREIGN KEY (`courseId`) REFERENCES `courses` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+
+-- Daten Export vom Benutzer nicht ausgewählt
+-- Exportiere Struktur von Tabelle ila.lectures
+CREATE TABLE IF NOT EXISTS `lectures` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `courseId` int(11) unsigned NOT NULL,
+  `topic` varchar(255) NOT NULL,
+  `description` text NOT NULL DEFAULT '',
+  `visible` tinyint(4) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `courseId` (`courseId`),
+  CONSTRAINT `FKCourseLectures` FOREIGN KEY (`courseId`) REFERENCES `courses` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 
 -- Daten Export vom Benutzer nicht ausgewählt
 -- Exportiere Struktur von Tabelle ila.users

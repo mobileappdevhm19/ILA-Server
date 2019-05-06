@@ -63,6 +63,18 @@ definitions:
       name:
         type: string
 
+  CoursesResponseModel:
+    type: object
+    properties:
+      ownCourses:
+        type: array
+        items:
+          $ref: '#/definitions/CourseModel'
+      memberCourses:
+        type: array
+        items:
+          $ref: '#/definitions/CourseModel'
+
   CourseModel:
     type: object
     required:
@@ -78,7 +90,7 @@ definitions:
         type: string
       ownerId:
         type: integer
-      tokens:
+      course_tokens:
         type: array
         items:
           $ref: '#/definitions/TokenModel'
@@ -242,9 +254,7 @@ paths:
         200:
           description: Array of Courses
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/CourseModel'
+            $ref: '#/definitions/CoursesResponseModel'
         500:
           $ref: '#/responses/InternalServerError'
     post:
@@ -326,7 +336,7 @@ paths:
             $ref: '#/definitions/GenericErrorResponse'
         500:
           $ref: '#/responses/InternalServerError'
-  /course/tokenGenerate:
+  /course/generateToken:
     post:
       summary: Creates a new course.
       tags:
