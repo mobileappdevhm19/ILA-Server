@@ -94,6 +94,23 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/TokenModel'
+      Members:
+        type: array
+        items:
+          $ref: '#/definitions/MemberModel'
+  MemberModel:
+    type: object
+    required:
+      - id
+      - name
+      - email
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      email:
+        type: string
   TokenModel:
     type: object
     required:
@@ -525,6 +542,29 @@ paths:
           description: No lecture with the id found.
           schema:
             $ref: '#/definitions/GenericErrorResponse'
+        500:
+          $ref: '#/responses/InternalServerError'
+  /lecture/own:
+    get:
+      summary: Get a list of all lectures in a course where the user is the owner.
+      tags:
+        - Lectures
+      security:
+        - jwt: []
+      parameters:
+        - in: path
+          name: courseId
+          type: integer
+          required: true
+      responses:
+        200:
+          description: Array of Lectures
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/LectureModel'
+        400:
+          $ref: '#/responses/GenericError'
         500:
           $ref: '#/responses/InternalServerError'
   /lecture/visible:

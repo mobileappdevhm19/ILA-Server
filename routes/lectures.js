@@ -17,7 +17,35 @@ router.get('/', [
     sequelize.query('SELECT lectures.* FROM lectures ' +
         'INNER JOIN courses ON courses.id = lectures.courseId ' +
         'INNER JOIN course_members ON course_members.courseId = courses.id AND course_members.userId = ? ' +
-        'WHERE lectures.courseId = ?',
+        'WHERE lectures.courseId = ? AND lectures.visible=1',
+        {
+            replacements: [
+                req.user.id,
+                req.query.courseId
+            ],
+            type: sequelize.QueryTypes.SELECT
+        })
+        .then(lectures => res.json(lectures))
+        .catch(error => {
+            console.error(error);
+            res.status(500).json({errors: ['Please ty again. Internal server error.']});
+        });
+});
+
+// Get Lectures from a course
+router.get('/own', [
+    query('courseId')
+        .not().isEmpty().withMessage('courseId can not be empty.')
+        .isNumeric()
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({errors: errors.array()});
+    }
+
+    sequelize.query('SELECT lectures.* FROM lectures ' +
+        'INNER JOIN courses ON courses.id = lectures.courseId AND courses.ownerId = ? '+
+        'WHERE lectures.courseId = ? AND lectures.visible=1',
         {
             replacements: [
                 req.user.id,
@@ -69,7 +97,7 @@ router.post('/',
                     description: req.body.description,
                     visible: req.body.visible,
                 })
-                    .then(lecture => res.json(lecture.get().values));
+                    .then(lecture => res.json(lecture.get()));
             })
             .catch(error => {
                 console.error(error);
@@ -148,7 +176,7 @@ router.put('/', [
                         topic: req.body.topic,
                         description: req.body.description,
                     })
-                    .then(() => res.json(lecture.get().values));
+                    .then(() => res.json(lecture.get()));
             })
             .catch(error => {
                 console.error(error);
@@ -188,7 +216,7 @@ router.put('/visible', [
 
                 return lecture
                     .update({visible: req.body.visible})
-                    .then(() => res.json(lecture.get().values));
+                    .then(() => res.json(lecture.get()));
             })
             .catch(error => {
                 console.error(error);

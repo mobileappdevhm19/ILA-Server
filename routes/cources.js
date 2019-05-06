@@ -11,7 +11,7 @@ router.get('/', (req, res) => {
             where: {ownerId: req.user.id},
             include: [
                 {
-                    model: models.CourseToken
+                    model: models.CourseToken,
                 },
                 {
                     model: models.User,
@@ -65,7 +65,9 @@ router.post('/',
                 description: req.body.description
             })
             .then(course => {
-                res.json(course.get().values);
+                var courseDATA = course.get()
+                console.log(JSON.stringify(courseDATA));
+                res.json(courseDATA);
             })
             .catch(error => {
                 console.error(error);
@@ -99,7 +101,7 @@ router.put('/',
                             title: req.body.title,
                             description: req.body.description
                         })
-                        .then(() => res.json(course.get().values));
+                        .then(() => res.json(course.get()));
                 } else {
                     throw {code: 403, errors: ['You can only change your own course.']};
                 }
