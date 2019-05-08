@@ -149,10 +149,6 @@ definitions:
       description:
         type: string
 
-  LecturesResponse:
-    type: array
-    items:
-      $ref: '#/definitions/LectureModel'
   LectureModel:
     type: object
     required:
@@ -458,7 +454,9 @@ paths:
         200:
           description: Array of Lectures
           schema:
-            $ref: '#/definitions/LecturesResponse'
+            type: array
+            items:
+              $ref: '#/definitions/LectureModel'
         400:
           $ref: '#/responses/GenericError'
         500:
