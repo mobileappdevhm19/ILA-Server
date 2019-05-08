@@ -446,7 +446,7 @@ paths:
       security:
         - jwt: []
       parameters:
-        - in: path
+        - in: query
           name: courseId
           type: integer
           required: true
@@ -552,7 +552,7 @@ paths:
       security:
         - jwt: []
       parameters:
-        - in: path
+        - in: query
           name: courseId
           type: integer
           required: true
