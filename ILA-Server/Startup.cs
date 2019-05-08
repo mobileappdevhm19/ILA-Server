@@ -86,7 +86,11 @@ namespace ILA_Server
                 .AddDefaultTokenProviders();
             services.Configure<JwtOptions>(jwtSection);
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc()
+                .AddJsonOptions(
+                    options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                )
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             // Register the Swagger services
             services.AddSwaggerDocument(config =>
@@ -95,7 +99,8 @@ namespace ILA_Server
                 config.DocumentProcessors.Add(new SecurityDefinitionAppender("JWT", new List<string>(), new SwaggerSecurityScheme
                 {
                     Type = SwaggerSecuritySchemeType.ApiKey,
-                    Name = "Bearer",
+                    Name = "Authorization",
+                    BearerFormat = "JWT ",
                     In = SwaggerSecurityApiKeyLocation.Header,
                 }));
                 config.PostProcess = document =>

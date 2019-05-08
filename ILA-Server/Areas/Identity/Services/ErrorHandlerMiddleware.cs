@@ -34,7 +34,7 @@ namespace ILA_Server.Areas.Identity.Services
                 : JsonConvert.SerializeObject(new { errors = new UserException("Unexpected error occurred").UserErrors });
             
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = 400;
+            context.Response.StatusCode = exception is UserException userException1 ? userException1.Code :400;
 
             return context.Response.WriteAsync(payload);
         }

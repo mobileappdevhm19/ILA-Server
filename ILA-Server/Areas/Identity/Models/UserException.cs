@@ -9,13 +9,15 @@ namespace ILA_Server.Areas.Identity.Models
     public class UserException : Exception
     {
         public List<string> UserErrors { get; }
+        public int Code { get; }
 
-        private UserException()
+        public UserException(int code = 400)
         {
             UserErrors = new List<string>();
+            Code = code;
         }
 
-        public UserException(string[] userErrors) : this()
+        public UserException(string[] userErrors,int code = 400) : this(code)
         {
             if (userErrors != null && userErrors.Length != 0)
             {
@@ -23,7 +25,7 @@ namespace ILA_Server.Areas.Identity.Models
             }
         }
 
-        public UserException(string userError) : this()
+        public UserException(string userError, int code = 400) : this(code)
         {
             if (!string.IsNullOrWhiteSpace(userError))
             {
@@ -31,7 +33,7 @@ namespace ILA_Server.Areas.Identity.Models
             }
         }
 
-        public UserException(List<string> userErrors) : this()
+        public UserException(List<string> userErrors, int code = 400) : this(code)
         {
             if (userErrors != null && userErrors.Count != 0)
             {
@@ -39,7 +41,7 @@ namespace ILA_Server.Areas.Identity.Models
             }
         }
 
-        public UserException(ModelStateDictionary modelState) : this()
+        public UserException(ModelStateDictionary modelState, int code = 400) : this(code)
         {
             UserErrors.AddRange(modelState
                 .Select(x => x.Value.Errors)
@@ -48,7 +50,7 @@ namespace ILA_Server.Areas.Identity.Models
                 .Select(e => e.ErrorMessage));
         }
 
-        public UserException(IdentityResult result) : this()
+        public UserException(IdentityResult result, int code = 400) : this(code)
         {
             UserErrors.AddRange(result.Errors.Select(x => x.Description));
         }

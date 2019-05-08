@@ -14,6 +14,7 @@ namespace ILA_Server.Areas.Identity.Services
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
+
             if (await _tokenManager.IsCurrentActiveToken() == TokenState.InActive)
             {
                 // custom HTTP-Code 498 for an revoked token.

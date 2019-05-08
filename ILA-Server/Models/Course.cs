@@ -15,9 +15,12 @@ namespace ILA_Server.Models
         [Required]
         public string Title { get; set; }
 
+        [Required]
+        [DefaultValue("")]
         [DataType(DataType.Text)]
         public string Description { get; set; }
 
+        [Required]
         [DefaultValue(false)]
         public bool Archived { get; set; }
 
