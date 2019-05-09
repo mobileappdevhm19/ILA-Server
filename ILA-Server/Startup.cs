@@ -95,7 +95,6 @@ namespace ILA_Server
             // Register the Swagger services
             services.AddSwaggerDocument(config =>
             {
-                config.OperationProcessors.Add(new OperationSecurityScopeProcessor("JWT"));
                 config.DocumentProcessors.Add(new SecurityDefinitionAppender("JWT", new List<string>(), new SwaggerSecurityScheme
                 {
                     Type = SwaggerSecuritySchemeType.ApiKey,
@@ -103,6 +102,8 @@ namespace ILA_Server
                     BearerFormat = "JWT ",
                     In = SwaggerSecurityApiKeyLocation.Header,
                 }));
+                config.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("JWT"));
+
                 config.PostProcess = document =>
                 {
                     document.Info.Version = "v1";
@@ -138,7 +139,7 @@ namespace ILA_Server
             app.UseSwagger(config => config.PostProcess = (document, request) =>
             {
                 document.Schemes.Clear();
-                document.Schemes.Add(Environment.GetEnvironmentVariable("SWAGGERSCHEMA").ToLower() == "http"
+                document.Schemes.Add(Environment.GetEnvironmentVariable("SWAGGERSCHEMA")?.ToLower() != "https"
                     ? SwaggerSchema.Http
                     : SwaggerSchema.Https);
                 document.Host = Environment.GetEnvironmentVariable("SWAGGERHOST") ?? "localhost";
