@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using ILA_Server.Areas.Identity.Models;
 using Microsoft.AspNetCore.Http;
@@ -157,6 +159,69 @@ namespace ILA_Server.Controllers
             await _context.SaveChangesAsync();
 
             return course;
+        }
+
+        [HttpPost("generateToken")]
+        public async Task<ActionResult> GenerateToken(int courseId)
+        {
+            var course = await _context.Courses
+                .Include(x => x.Owner)
+                .SingleOrDefaultAsync(x => x.Id == courseId);
+
+            if (course == null)
+                throw new UserException(404);
+
+            if (course.Owner.Id != GetUserId())
+                throw new UserException(403);
+
+            try
+            {
+                CourseToken token = new CourseToken { Active = true, Course = course, Token = RandomString(10, false) };
+
+                await _context.CourseTokens.AddAsync(token);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new UserException(500);
+            }
+
+            return CreatedAtAction("GetOwnerCourse", new { id = course.Id }, course);
+        }
+
+        [HttpPost("join")]
+        public async Task<ActionResult> JoinCourse(int courseId, string token)
+        {
+            var course = await _context.Courses
+                .Include(x => x.Tokens)
+                .SingleOrDefaultAsync(x => x.Id == courseId);
+
+            if (course == null)
+                throw new UserException("CourseId and/or token wrong.", 404);
+
+            if (course.Tokens.Any(x => x.Active && x.Token == token))
+            {
+                if (course.Members == null)
+                    course.Members = new List<CourseMember>();
+
+                course.Members.Add(new CourseMember { Course = course, CourseId = course.Id, MemberId = GetUserId() });
+                return CreatedAtAction("GetMemberCourse", new { id = course.Id }, course);
+            }
+            throw new UserException("CourseId and/or token wrong.", 404);
+        }
+
+        private string RandomString(int size, bool lowerCase)
+        {
+            StringBuilder builder = new StringBuilder();
+            Random random = new Random();
+            for (int i = 0; i < size; i++)
+            {
+                var ch = Convert.ToChar(Convert.ToInt32(Math.Floor(26 * random.NextDouble() + 65)));
+                builder.Append(ch);
+            }
+            if (lowerCase)
+                return builder.ToString().ToLower();
+            return builder.ToString();
         }
 
         private string GetUserId()
