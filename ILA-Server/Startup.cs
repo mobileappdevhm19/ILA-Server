@@ -90,7 +90,7 @@ namespace ILA_Server
                 .AddJsonOptions(
                     options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
                 )
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             // Register the Swagger services
             services.AddSwaggerDocument(config =>
@@ -106,8 +106,7 @@ namespace ILA_Server
                 config.PostProcess = document =>
                 {
                     document.Info.Version = "v1";
-                    document.Info.Title = "FOrg.Server API";
-                    document.Info.Description = "FOrg is an software helps you to organize and make some things easier.";
+                    document.Info.Title = "ILA-Server API";
                 };
             });
             //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
@@ -119,7 +118,15 @@ namespace ILA_Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwaggerUi3();
+                app.UseSwaggerUi3(config =>
+                {
+                    config.TransformToExternalPath = (internalUiRoute, request) =>
+                    {
+                        // The header X-External-Path is set in the nginx.conf file
+                        var externalPath = request.Headers.ContainsKey("X-External-Path") ? request.Headers["X-External-Path"].First() : "";
+                        return externalPath + internalUiRoute;
+                    };
+                });
             }
             else
             {
@@ -135,12 +142,15 @@ namespace ILA_Server
             if (string.IsNullOrWhiteSpace(forceHttps) || forceHttps != "0")
             {
                 app.UseHttpsRedirection();
-                app.UseSwagger(cfg => cfg.PostProcess = (settings, _) => settings.Schemes = new[] { SwaggerSchema.Https });
             }
-            else
+            app.UseSwagger(config => config.PostProcess = (document, request) =>
             {
-                app.UseSwagger();
-            }
+                if (request.Headers.ContainsKey("X-External-Host"))
+                {
+                    document.Host = request.Headers["X-External-Host"].First();
+                    document.BasePath = request.Headers["X-External-Path"].First();
+                }
+            });
         }
     }
 }
