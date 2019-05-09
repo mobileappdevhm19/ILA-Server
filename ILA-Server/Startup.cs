@@ -118,15 +118,7 @@ namespace ILA_Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwaggerUi3(config =>
-                {
-                    config.TransformToExternalPath = (internalUiRoute, request) =>
-                    {
-                        // The header X-External-Path is set in the nginx.conf file
-                        var externalPath = request.Headers.ContainsKey("X-External-Path") ? request.Headers["X-External-Path"].First() : "";
-                        return externalPath + internalUiRoute;
-                    };
-                });
+                app.UseSwaggerUi3();
             }
             else
             {
@@ -145,11 +137,11 @@ namespace ILA_Server
             }
             app.UseSwagger(config => config.PostProcess = (document, request) =>
             {
-                if (request.Headers.ContainsKey("X-Forwarded-Host"))
-                {
-                    document.Host = request.Headers["X-Forwarded-Host"].First();
-                    document.BasePath = request.Headers["X-Forwarded-Path"].First();
-                }
+                document.Schemes.Clear();
+                document.Schemes.Add(Environment.GetEnvironmentVariable("SWAGGERSCHEMA").ToLower() == "http"
+                    ? SwaggerSchema.Http
+                    : SwaggerSchema.Https);
+                document.Host = Environment.GetEnvironmentVariable("SWAGGERHOST") ?? "localhost";
             });
         }
     }
