@@ -145,10 +145,10 @@ namespace ILA_Server
             }
             app.UseSwagger(config => config.PostProcess = (document, request) =>
             {
-                if (request.Headers.ContainsKey("X-External-Host"))
+                if (request.Headers.ContainsKey("X-Forwarded-Host"))
                 {
-                    document.Host = request.Headers["X-External-Host"].First();
-                    document.BasePath = request.Headers["X-External-Path"].First();
+                    document.Host = request.Headers["X-Forwarded-Host"].First();
+                    document.BasePath = request.Headers["X-Forwarded-Path"].First();
                 }
             });
         }
