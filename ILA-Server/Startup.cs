@@ -95,7 +95,7 @@ namespace ILA_Server
             // Register the Swagger services
             services.AddSwaggerDocument(config =>
             {
-                config.DocumentProcessors.Add(new SecurityDefinitionAppender("JWT", new List<string>(), new SwaggerSecurityScheme
+                config.DocumentProcessors.Add(new SecurityDefinitionAppender("JWT", new SwaggerSecurityScheme
                 {
                     Type = SwaggerSecuritySchemeType.ApiKey,
                     Name = "Authorization",
