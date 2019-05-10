@@ -31,10 +31,12 @@ namespace ILA_Server.Areas.Identity.Services
         {
             var payload = exception is UserException userException
                 ? JsonConvert.SerializeObject(new { errors = userException.UserErrors })
-                : JsonConvert.SerializeObject(new { errors = new UserException("Unexpected error occurred").UserErrors });
-            
+                : (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development") ?
+                    JsonConvert.SerializeObject(new { errors = exception }) 
+                    : JsonConvert.SerializeObject(new { errors = new UserException("Unexpected error occurred").UserErrors });
+
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = exception is UserException userException1 ? userException1.Code :400;
+            context.Response.StatusCode = exception is UserException userException1 ? userException1.Code : 400;
 
             return context.Response.WriteAsync(payload);
         }
