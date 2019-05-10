@@ -69,12 +69,12 @@ namespace ILA_Server.Controllers
             
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetOwnerLectures", new {courseId = lecture.Course.Id});
+            return RedirectToAction(nameof(GetOwnerLectures), new {courseId = lecture.Course.Id});
         }
 
         // POST: api/Lectures
         [HttpPost("{courseId}")]
-        public async Task<ActionResult<IEnumerable<Lecture>>> PostLecture(int courseId, LectureCreateUpdateModel lectureModel)
+        public async Task<ActionResult<IEnumerable<Lecture>>> PostLecture(int courseId, [FromBody]LectureCreateUpdateModel lectureModel)
         {
             Course course = await _context.Courses
                 .Where(x => x.Owner.Id == GetUserId())
@@ -96,7 +96,7 @@ namespace ILA_Server.Controllers
             _context.Lectures.Add(lecture);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetOwnerLectures", new {  courseId });
+            return RedirectToAction(nameof(GetOwnerLectures), new { courseId = lecture.Course.Id });
         }
 
         // DELETE: api/Lectures/5

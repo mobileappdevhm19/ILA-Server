@@ -112,7 +112,7 @@ namespace ILA_Server.Controllers
                 throw new UserException(500);
             }
 
-            return NoContent();
+            return RedirectToAction(nameof(GetOwnerCourse), new { id = course.Id });
         }
 
         // POST: api/Courses
@@ -138,7 +138,7 @@ namespace ILA_Server.Controllers
                 throw new UserException(500);
             }
 
-            return CreatedAtAction("GetOwnerCourse", new { id = course.Id }, course);
+            return RedirectToAction(nameof(GetOwnerCourse), new { id = course.Id });
         }
 
         // DELETE: api/Courses/5
@@ -186,7 +186,7 @@ namespace ILA_Server.Controllers
                 throw new UserException(500);
             }
 
-            return CreatedAtAction("GetOwnerCourse", new { id = course.Id }, course);
+            return RedirectToAction(nameof(GetOwnerCourse), new { id = course.Id });
         }
 
         [HttpPost("join")]
@@ -205,7 +205,7 @@ namespace ILA_Server.Controllers
                     course.Members = new List<CourseMember>();
 
                 course.Members.Add(new CourseMember { Course = course, CourseId = course.Id, MemberId = GetUserId() });
-                return CreatedAtAction("GetMemberCourse", new { id = course.Id }, course);
+                return RedirectToAction(nameof(GetMemberCourse), new { id = course.Id });
             }
             throw new UserException("CourseId and/or token wrong.", 404);
         }
