@@ -205,6 +205,7 @@ namespace ILA_Server.Controllers
                     course.Members = new List<CourseMember>();
 
                 course.Members.Add(new CourseMember { Course = course, CourseId = course.Id, MemberId = GetUserId() });
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(GetMemberCourse), new { id = course.Id });
             }
             throw new UserException("CourseId and/or token wrong.", 404);
