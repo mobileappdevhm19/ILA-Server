@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using ILA_Server.Areas.Identity.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ILA_Server.Data;
@@ -87,7 +85,7 @@ namespace ILA_Server.Controllers
 
         // PUT: api/Courses/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCourse(int id, CourseCreateUpateModel courseModel)
+        public async Task<Course> PutCourse(int id, [FromBody] CourseCreateUpateModel courseModel)
         {
             var course = await _context.Courses
                 .Include(x => x.Owner)
@@ -112,12 +110,12 @@ namespace ILA_Server.Controllers
                 throw new UserException(500);
             }
 
-            return RedirectToAction(nameof(GetOwnerCourse), new { id = course.Id });
+            return course;
         }
 
         // POST: api/Courses
         [HttpPost]
-        public async Task<ActionResult<Course>> PostCourse(CourseCreateUpateModel courseModel)
+        public async Task<ActionResult<Course>> PostCourse([FromBody] CourseCreateUpateModel courseModel)
         {
             ILAUser user = await _context.Users.FindAsync(GetUserId());
             Course course = new Course
@@ -138,7 +136,7 @@ namespace ILA_Server.Controllers
                 throw new UserException(500);
             }
 
-            return RedirectToAction(nameof(GetOwnerCourse), new { id = course.Id });
+            return RedirectToAction("GetOwnerCourse", new { id = course.Id });
         }
 
         // DELETE: api/Courses/5
@@ -161,7 +159,7 @@ namespace ILA_Server.Controllers
             return course;
         }
 
-        [HttpPost("generateToken")]
+        [HttpPost("generateToken/{courseId}")]
         public async Task<ActionResult> GenerateToken(int courseId)
         {
             var course = await _context.Courses
@@ -186,10 +184,64 @@ namespace ILA_Server.Controllers
                 throw new UserException(500);
             }
 
-            return RedirectToAction(nameof(GetOwnerCourse), new { id = course.Id });
+            return RedirectToAction("GetOwnerCourse", new { id = course.Id });
         }
 
-        [HttpPost("join")]
+        [HttpDelete("deleteToken/{tokenId}")]
+        public async Task<ActionResult> DeleteToken(int tokenId)
+        {
+            var token = await _context.CourseTokens
+                .Include(x => x.Course)
+                .ThenInclude(x => x.Owner)
+                .SingleOrDefaultAsync(x => x.Id == tokenId);
+
+            if (token == null)
+                throw new UserException(404);
+
+            if (token.Course.Owner.Id != GetUserId())
+                throw new UserException(403);
+
+            try
+            {
+                _context.CourseTokens.Remove(token);
+
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new UserException(500);
+            }
+            return RedirectToAction("GetOwnerCourse", new { id = token.Course.Id });
+        }
+
+        [HttpPut("updateToken/{tokenId}")]
+        public async Task<CourseToken> UpdateToken(int tokenId, bool state)
+        {
+            var token = await _context.CourseTokens
+                .Include(x => x.Course)
+                .ThenInclude(x => x.Owner)
+                .SingleOrDefaultAsync(x => x.Id == tokenId);
+
+            if (token == null)
+                throw new UserException(404);
+
+            if (token.Course.Owner.Id != GetUserId())
+                throw new UserException(403);
+
+            try
+            {
+                token.Active = state;
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new UserException(500);
+            }
+
+            return token;
+        }
+
+        [HttpPost("join/{courseId}")]
         public async Task<ActionResult> JoinCourse(int courseId, string token)
         {
             var course = await _context.Courses
@@ -206,9 +258,29 @@ namespace ILA_Server.Controllers
 
                 course.Members.Add(new CourseMember { Course = course, CourseId = course.Id, MemberId = GetUserId() });
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(GetMemberCourse), new { id = course.Id });
+                return RedirectToAction("GetMemberCourse", new { id = course.Id });
             }
             throw new UserException("CourseId and/or token wrong.", 404);
+        }
+
+        [HttpPost("leave/{courseId}")]
+        public async Task<ActionResult> LeaveCourse(int courseId)
+        {
+            var course = await _context.Courses
+                .Where(x => x.Members.Any(y => y.MemberId == GetUserId()))
+                .Include(x => x.Members)
+                .SingleOrDefaultAsync(x => x.Id == courseId);
+
+            if (course == null)
+                throw new UserException("Course not found.", 404);
+
+            CourseMember courseMember = course.Members.FirstOrDefault(x => x.MemberId == GetUserId());
+            if (courseMember == null)
+                throw new UserException("No course found where you are a member.", 404);
+
+            course.Members.Remove(courseMember);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("GetMemberCourses");
         }
 
         private string RandomString(int size, bool lowerCase)
