@@ -35,6 +35,8 @@ namespace ILA_Server.Controllers
             return await _context.Lectures
                 .Where(x => x.Course.Id == courseId)
                 .Where(x => x.Course.Members.Any(y => y.MemberId == GetUserId()))
+                .Include(x => x.Questions)
+                .ThenInclude(x => x.Answers)
                 .ToListAsync();
         }
 
@@ -44,19 +46,72 @@ namespace ILA_Server.Controllers
         {
             return await _context.Lectures
                 .Where(x => x.Course.Id == courseId)
-                .Where(x => x.Course.Owner.Id==GetUserId())
-                .Include(x=>x.Questions)
+                .Where(x => x.Course.Owner.Id == GetUserId())
+                .Include(x => x.Questions)
+                .ThenInclude(x => x.Answers)
+                .Include(x => x.Pauses)
                 .ToListAsync();
+        }
+
+
+        // GET: api/Lectures
+        [HttpGet("memberLecture/{lectureId}")]
+        public async Task<Lecture> GetMemberLecture(int lectureId)
+        {
+            return await _context.Lectures
+                .Where(x => x.Id == lectureId)
+                .Where(x => x.Course.Members.Any(y => y.MemberId == GetUserId()))
+                .Include(x => x.Questions)
+                .ThenInclude(x => x.Answers)
+                .SingleOrDefaultAsync();
+        }
+
+        // GET: api/Lectures/5
+        [HttpGet("ownerLecture/{lectureId}")]
+        public async Task<Lecture> GetOwnerLecture(int lectureId)
+        {
+            return await _context.Lectures
+                .Where(x => x.Id == lectureId)
+                .Where(x => x.Course.Owner.Id == GetUserId())
+                .Include(x => x.Questions)
+                .ThenInclude(x => x.Answers)
+                .Include(x => x.Pauses)
+                .SingleOrDefaultAsync();
+        }
+
+        [HttpPost("pause/{lectureId}")]
+        public async Task<ActionResult> PostPause(int lectureId)
+        {
+            Lecture lecture = await GetMemberLecture(lectureId);
+            ILAUser user = await _context.Users.FindAsync(GetUserId());
+
+            if (lecture == null)
+                throw new UserException("Lecture not found", 404);
+
+            if (user == null)
+                throw new UserException("Internal server Error", 500);
+
+            Pause pause = new Pause
+            {
+                Lecture = lecture,
+                TimeStamp = DateTime.Now.ToUniversalTime(),
+                User = user,
+            };
+
+            await _context.Pauses.AddAsync(pause);
+            await _context.SaveChangesAsync();
+
+            return Ok();
         }
 
         // PUT: api/Lectures/5
         [HttpPut("{id}")]
-        public async Task<ActionResult<IEnumerable<Lecture>>> PutLecture(int id, LectureCreateUpdateModel lectureModel)
+        public async Task<ActionResult<IEnumerable<Lecture>>> PutLecture(int id, [FromBody] LectureCreateUpdateModel lectureModel)
         {
             Lecture lecture = await _context.Lectures
                 .Where(x => x.Course.Owner.Id == GetUserId())
                 .Where(x => x.Id == id)
-                .Include(x=>x.Course)
+                .Include(x => x.Course)
                 .SingleOrDefaultAsync();
             if (lecture == null)
                 throw new UserException("Couldn't find a lecture with the id where you are the owner.", 404);
@@ -66,21 +121,21 @@ namespace ILA_Server.Controllers
             lecture.Stop = lectureModel.Stop;
             lecture.Title = lectureModel.Title;
             lecture.Visible = lectureModel.Visible;
-            
+
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(GetOwnerLectures), new {courseId = lecture.Course.Id});
+            return RedirectToAction(nameof(GetOwnerLectures), new { courseId = lecture.Course.Id });
         }
 
         // POST: api/Lectures
         [HttpPost("{courseId}")]
-        public async Task<ActionResult<IEnumerable<Lecture>>> PostLecture(int courseId, [FromBody]LectureCreateUpdateModel lectureModel)
+        public async Task<ActionResult<IEnumerable<Lecture>>> PostLecture(int courseId, [FromBody] LectureCreateUpdateModel lectureModel)
         {
             Course course = await _context.Courses
                 .Where(x => x.Owner.Id == GetUserId())
                 .Where(x => x.Id == courseId)
                 .SingleOrDefaultAsync();
-            if(course==null)
+            if (course == null)
                 throw new UserException("Couldn't find a course with the id where you are the owner.", 404);
 
             Lecture lecture = new Lecture
@@ -115,6 +170,36 @@ namespace ILA_Server.Controllers
             await _context.SaveChangesAsync();
 
             return lecture;
+        }
+
+        [HttpPost("questions/{lectureId}")]
+        public async Task<ActionResult<Question>> PostQuestion(int lectureId, [FromBody] QuestionCreate model)
+        {
+            Lecture lecture = await GetMemberLecture(lectureId);
+            ILAUser user = await _context.Users.FindAsync(GetUserId());
+
+            Question question = new Question
+            {
+                PointedQuestion = model.PointedQuestion,
+                Lecture = lecture,
+                User = user
+            };
+
+            await _context.Questions.AddAsync(question);
+            await _context.SaveChangesAsync();
+
+            question.User = null;
+            question.Lecture = null;
+            return Ok(question);
+        }
+
+        [HttpGet("questions/{lectureId}")]
+        public async Task<IEnumerable<Question>> GetQuestion(int lectureId)
+        {
+            return await _context.Questions
+                .Where(x => x.Lecture.Course.Members.Any(y => y.MemberId == GetUserId()))
+                .Include(x => x.Answers)
+                .ToListAsync();
         }
 
         private bool LectureExists(int id)

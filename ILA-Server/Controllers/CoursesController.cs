@@ -215,7 +215,7 @@ namespace ILA_Server.Controllers
         }
 
         [HttpPut("updateToken/{tokenId}")]
-        public async Task<CourseToken> UpdateToken(int tokenId, [FromBody] bool state)
+        public async Task<CourseToken> UpdateToken(int tokenId, bool state)
         {
             var token = await _context.CourseTokens
                 .Include(x => x.Course)
@@ -242,7 +242,7 @@ namespace ILA_Server.Controllers
         }
 
         [HttpPost("join/{courseId}")]
-        public async Task<ActionResult> JoinCourse(int courseId, [FromBody] string token)
+        public async Task<ActionResult> JoinCourse(int courseId, string token)
         {
             var course = await _context.Courses
                 .Include(x => x.Tokens)

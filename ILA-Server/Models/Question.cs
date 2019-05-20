@@ -21,4 +21,10 @@ namespace ILA_Server.Models
 
         public ICollection<Answer> Answers { get; set; }
     }
+
+    public class QuestionCreate
+    {
+        [Required]
+        public string PointedQuestion { get; set; }
+    }
 }
