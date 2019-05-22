@@ -136,7 +136,7 @@ namespace ILA_Server.Controllers
                 throw new UserException(500);
             }
 
-            return RedirectToAction("GetOwnerCourse", new { id = course.Id });
+            return RedirectToAction("GetOwnerCourse", "Courses", new { @id = course.Id.ToString() });
         }
 
         // DELETE: api/Courses/5
@@ -211,6 +211,7 @@ namespace ILA_Server.Controllers
             {
                 throw new UserException(500);
             }
+
             return RedirectToAction("GetOwnerCourse", new { id = token.Course.Id });
         }
 
@@ -260,6 +261,7 @@ namespace ILA_Server.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction("GetMemberCourse", new { id = course.Id });
             }
+
             throw new UserException("CourseId and/or token wrong.", 404);
         }
 
@@ -292,6 +294,7 @@ namespace ILA_Server.Controllers
                 var ch = Convert.ToChar(Convert.ToInt32(Math.Floor(26 * random.NextDouble() + 65)));
                 builder.Append(ch);
             }
+
             if (lowerCase)
                 return builder.ToString().ToLower();
             return builder.ToString();
@@ -308,13 +311,10 @@ namespace ILA_Server.Controllers
 
     public class CourseCreateUpateModel
     {
-        [Required]
-        public string Title { get; set; }
+        [Required] public string Title { get; set; }
 
-        [Required]
-        public string Description { get; set; }
+        [Required] public string Description { get; set; }
 
-        [Required]
-        public bool Archived { get; set; }
+        [Required] public bool Archived { get; set; }
     }
 }

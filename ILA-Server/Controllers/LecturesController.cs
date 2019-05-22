@@ -151,7 +151,7 @@ namespace ILA_Server.Controllers
             _context.Lectures.Add(lecture);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(GetOwnerLectures), new { courseId = lecture.Course.Id });
+            return RedirectToAction(nameof(GetOwnerLectures), "Lectures", new { @courseId = lecture.Course.Id });
         }
 
         // DELETE: api/Lectures/5
