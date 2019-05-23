@@ -110,12 +110,13 @@ namespace ILA_Server.Controllers
                 throw new UserException(500);
             }
 
+            course.Owner = null;
             return course;
         }
 
         // POST: api/Courses
         [HttpPost]
-        public async Task<ActionResult<Course>> PostCourse([FromBody] CourseCreateUpateModel courseModel)
+        public async Task<Course> PostCourse([FromBody] CourseCreateUpateModel courseModel)
         {
             ILAUser user = await _context.Users.FindAsync(GetUserId());
             Course course = new Course
@@ -136,7 +137,8 @@ namespace ILA_Server.Controllers
                 throw new UserException(500);
             }
 
-            return RedirectToAction("GetOwnerCourse", "Courses", new { @id = course.Id.ToString() });
+            course.Owner = null;
+            return course;
         }
 
         // DELETE: api/Courses/5
@@ -160,7 +162,7 @@ namespace ILA_Server.Controllers
         }
 
         [HttpPost("generateToken/{courseId}")]
-        public async Task<ActionResult> GenerateToken(int courseId)
+        public async Task<CourseToken> GenerateToken(int courseId)
         {
             var course = await _context.Courses
                 .Include(x => x.Owner)
@@ -178,13 +180,14 @@ namespace ILA_Server.Controllers
 
                 await _context.CourseTokens.AddAsync(token);
                 await _context.SaveChangesAsync();
+
+                token.Course = null;
+                return token;
             }
             catch (DbUpdateConcurrencyException)
             {
                 throw new UserException(500);
             }
-
-            return RedirectToAction("GetOwnerCourse", new { id = course.Id });
         }
 
         [HttpDelete("deleteToken/{tokenId}")]
@@ -212,7 +215,7 @@ namespace ILA_Server.Controllers
                 throw new UserException(500);
             }
 
-            return RedirectToAction("GetOwnerCourse", new { id = token.Course.Id });
+            return Ok();
         }
 
         [HttpPut("updateToken/{tokenId}")]
@@ -239,6 +242,8 @@ namespace ILA_Server.Controllers
                 throw new UserException(500);
             }
 
+            token.Course = null;
+
             return token;
         }
 
@@ -259,7 +264,7 @@ namespace ILA_Server.Controllers
 
                 course.Members.Add(new CourseMember { Course = course, CourseId = course.Id, MemberId = GetUserId() });
                 await _context.SaveChangesAsync();
-                return RedirectToAction("GetMemberCourse", new { id = course.Id });
+                return Ok();
             }
 
             throw new UserException("CourseId and/or token wrong.", 404);
@@ -282,7 +287,7 @@ namespace ILA_Server.Controllers
 
             course.Members.Remove(courseMember);
             await _context.SaveChangesAsync();
-            return RedirectToAction("GetMemberCourses");
+            return Ok();
         }
 
         private string RandomString(int size, bool lowerCase)

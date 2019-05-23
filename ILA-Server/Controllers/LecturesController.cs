@@ -106,7 +106,7 @@ namespace ILA_Server.Controllers
 
         // PUT: api/Lectures/5
         [HttpPut("{id}")]
-        public async Task<ActionResult<IEnumerable<Lecture>>> PutLecture(int id, [FromBody] LectureCreateUpdateModel lectureModel)
+        public async Task<ActionResult> PutLecture(int id, [FromBody] LectureCreateUpdateModel lectureModel)
         {
             Lecture lecture = await _context.Lectures
                 .Where(x => x.Course.Owner.Id == GetUserId())
@@ -124,12 +124,12 @@ namespace ILA_Server.Controllers
 
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(GetOwnerLectures), new { courseId = lecture.Course.Id });
+            return Ok();
         }
 
         // POST: api/Lectures
         [HttpPost("{courseId}")]
-        public async Task<ActionResult<IEnumerable<Lecture>>> PostLecture(int courseId, [FromBody] LectureCreateUpdateModel lectureModel)
+        public async Task<Lecture> PostLecture(int courseId, [FromBody] LectureCreateUpdateModel lectureModel)
         {
             Course course = await _context.Courses
                 .Where(x => x.Owner.Id == GetUserId())
@@ -151,7 +151,8 @@ namespace ILA_Server.Controllers
             _context.Lectures.Add(lecture);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(GetOwnerLectures), "Lectures", new { @courseId = lecture.Course.Id });
+            lecture.Course.Owner = null;
+            return lecture;
         }
 
         // DELETE: api/Lectures/5
@@ -173,7 +174,7 @@ namespace ILA_Server.Controllers
         }
 
         [HttpPost("questions/{lectureId}")]
-        public async Task<ActionResult<Question>> PostQuestion(int lectureId, [FromBody] QuestionCreate model)
+        public async Task<Question> PostQuestion(int lectureId, [FromBody] QuestionCreate model)
         {
             Lecture lecture = await GetMemberLecture(lectureId);
             ILAUser user = await _context.Users.FindAsync(GetUserId());
@@ -190,7 +191,7 @@ namespace ILA_Server.Controllers
 
             question.User = null;
             question.Lecture = null;
-            return Ok(question);
+            return question;
         }
 
         [HttpGet("questions/{lectureId}")]
