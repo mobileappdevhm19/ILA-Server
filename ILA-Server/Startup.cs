@@ -7,11 +7,13 @@ using ILA_Server.Areas.Identity.Models;
 using ILA_Server.Areas.Identity.Services;
 using ILA_Server.Data;
 using ILA_Server.Models;
+using ILA_Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -21,6 +23,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NSwag;
 using NSwag.SwaggerGeneration.Processors.Security;
+using ILA_Server.Hubs;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace ILA_Server
 {
@@ -40,12 +45,21 @@ namespace ILA_Server
         {
             services.AddLogging();
 
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
+
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IUserService, UserService>();
             services.AddSingleton<IJwtHandler, JwtHandler>();
             services.AddTransient<TokenManagerMiddleware>();
             services.AddTransient<ITokenManager, TokenManager>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            services.AddScoped<IPushService, PushService>();
 
             if (HostingEnvironment.IsDevelopment())
             {
@@ -82,7 +96,8 @@ namespace ILA_Server
                 o.Password.RequireNonAlphanumeric = false;
                 o.Password.RequireUppercase = false;
                 o.Password.RequiredLength = 7;
-            }).AddEntityFrameworkStores<ILADbContext>()
+            }).AddDefaultUI(UIFramework.Bootstrap4)
+                .AddEntityFrameworkStores<ILADbContext>()
                 .AddDefaultTokenProviders();
             services.Configure<JwtOptions>(jwtSection);
 
@@ -110,7 +125,12 @@ namespace ILA_Server
                     document.Info.Title = "ILA-Server API";
                 };
             });
-            //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddSignalR()
+                .AddJsonProtocol(builder =>
+                    {
+                        builder.PayloadSerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                    });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -126,6 +146,8 @@ namespace ILA_Server
                 app.UseHsts();
             }
 
+            app.UseStaticFiles();
+            app.UseCookiePolicy();
             app.UseMiddleware<ErrorHandlerMiddleware>();
             app.UseAuthentication();
             app.UseMiddleware<TokenManagerMiddleware>();
@@ -143,6 +165,25 @@ namespace ILA_Server
                     ? SwaggerSchema.Http
                     : SwaggerSchema.Https);
                 document.Host = Environment.GetEnvironmentVariable("SWAGGERHOST") ?? "localhost";
+            });
+
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
+            });
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "areas",
+                    template: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
+                );
+            });
+
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<LectureHub>("/lectureHub");
             });
         }
     }

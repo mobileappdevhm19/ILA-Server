@@ -12,6 +12,7 @@ namespace ILA_Server.Data
         public DbSet<Answer> Answers { get; set; }
         public DbSet<CourseToken> CourseTokens { get; set; }
         public DbSet<Pause> Pauses { get; set; }
+        public DbSet<PushTokens> PushTokens { get; set; }
 
         public ILADbContext(DbContextOptions options) : base(options) { }
 
@@ -47,6 +48,7 @@ namespace ILA_Server.Data
             modelBuilder.Entity<Lecture>()
                 .HasOne(c => c.Course)
                 .WithMany(c => c.Lectures)
+                .HasForeignKey(k=>k.CourseId)
                 .IsRequired();
 
             modelBuilder.Entity<CourseToken>()
@@ -72,6 +74,10 @@ namespace ILA_Server.Data
                 .WithMany(l => l.Answers)
                 .IsRequired();
 
+            modelBuilder.Entity<PushTokens>()
+                .HasOne(q => q.User)
+                .WithMany(l => l.PushTokens)
+                .IsRequired();
 
         }
     }

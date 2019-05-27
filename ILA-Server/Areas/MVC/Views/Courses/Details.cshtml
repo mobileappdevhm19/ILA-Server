@@ -1,0 +1,150 @@
+﻿@using ILA_Server.Models
+@model ILA_Server.Models.Course
+
+@{
+  ViewData["Title"] = "Details";
+  Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Course Details</h1>
+
+<div>
+  <hr />
+  <dl class="row">
+    <dt class="col-sm-2">
+      @Html.DisplayNameFor(model => model.Title)
+    </dt>
+    <dd class="col-sm-10">
+      @Html.DisplayFor(model => model.Title)
+    </dd>
+    <dt class="col-sm-2">
+      @Html.DisplayNameFor(model => model.Description)
+    </dt>
+    <dd class="col-sm-10">
+      @Html.DisplayFor(model => model.Description)
+    </dd>
+    <dt class="col-sm-2">
+      @Html.DisplayNameFor(model => model.Archived)
+    </dt>
+    <dd class="col-sm-10">
+      @Html.DisplayFor(model => model.Archived)
+    </dd>
+  </dl>
+</div>
+<div>
+  <hr />
+  <h4>Lectures</h4>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>
+          @Html.DisplayNameForInnerType((Lecture item) => item.Title)
+        </th>
+        <th>
+          @Html.DisplayNameForInnerType((Lecture item) => item.Description)
+        </th>
+        <th>
+          @Html.DisplayNameForInnerType((Lecture item) => item.Visible)
+        </th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var item in Model.Lectures)
+      {
+        <tr>
+          <td>
+            @Html.DisplayFor(modelItem => item.Title)
+          </td>
+          <td>
+            @Html.DisplayFor(modelItem => item.Description)
+          </td>
+          <td>
+            @Html.DisplayFor(modelItem => item.Visible)
+          </td>
+          <td>
+            <a asp-area="MVC" asp-controller="Lectures" asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+            <a asp-area="MVC" asp-controller="Lectures" asp-action="Details" asp-route-id="@item.Id">Details</a> |
+            <a asp-area="MVC" asp-controller="Lectures" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+<div>
+  <hr />
+  <h4>Tokens</h4>
+  <p>
+    <a class="btn btn-primary" asp-action="CreateToken"asp-route-id="@Model.Id">Create New Token</a>
+  </p>
+  <table class="table">
+    <thead>
+    <tr>
+      <th>
+        @Html.DisplayNameForInnerType((CourseToken item) => item.Token)
+      </th>
+      <th>
+        @Html.DisplayNameForInnerType((CourseToken item) => item.Active)
+      </th>
+
+      <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model.Tokens)
+    {
+      <tr>
+        <td>
+          @Html.DisplayFor(modelItem => item.Token)
+        </td>
+        <td>
+          @Html.DisplayFor(modelItem => item.Active)
+        </td>
+        <td>
+          <a asp-action="ChangeTokenState" asp-route-id="@item.Id">Change visibility</a> |
+          <a asp-action="ShowTokenQr" asp-route-id="@item.Id">Show QR-Code</a> |
+          <a asp-action="DeleteToken" asp-route-id="@item.Id">Delete Token</a>
+        </td>
+      </tr>
+    }
+    </tbody>
+  </table>
+</div>
+<div>
+  <hr />
+  <h4>Members</h4>
+  <table class="table">
+    <thead>
+    <tr>
+      <th>
+        @Html.DisplayNameForInnerType((ILAUser item) => item.FirstName)
+      </th>
+      <th>
+        @Html.DisplayNameForInnerType((ILAUser item) => item.LastName)
+      </th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model.Members)
+    {
+      <tr>
+        <td>
+          @Html.DisplayFor(modelItem => item.Member.FirstName)
+        </td>
+        <td>
+          @Html.DisplayFor(modelItem => item.Member.LastName)
+        </td>
+        <td>
+          <!-- TODO: remove user button -->
+        </td>
+      </tr>
+    }
+    </tbody>
+  </table>
+</div>
+<div>
+  <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
+  <a asp-action="Index">Back to List</a>
+</div>

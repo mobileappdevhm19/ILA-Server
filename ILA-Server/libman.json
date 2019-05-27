@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "defaultProvider": "unpkg",
+  "libraries": [
+    {
+      "provider": "unpkg",
+      "library": "@aspnet/signalr@1.1.4",
+      "destination": "wwwroot/lib/signalr/",
+      "files": [
+        "dist/browser/signalr.js",
+        "dist/browser/signalr.min.js"
+      ]
+    },
+    {
+      "library": "chart.js@2.8.0",
+      "destination": "wwwroot/lib/chart.js/",
+      "files": [
+        "dist/Chart.bundle.js",
+        "dist/Chart.bundle.min.js",
+        "dist/Chart.min.css",
+        "dist/Chart.min.js",
+        "dist/Chart.js",
+        "dist/Chart.css"
+      ]
+    },
+    {
+      "provider": "unpkg",
+      "library": "moment@2.24.0",
+      "destination": "wwwroot/lib/moment/",
+      "files": [
+        "min/locales.js",
+        "min/locales.min.js",
+        "min/moment-with-locales.js",
+        "min/moment-with-locales.min.js",
+        "min/moment.min.js"
+      ]
+    }
+  ]
+}

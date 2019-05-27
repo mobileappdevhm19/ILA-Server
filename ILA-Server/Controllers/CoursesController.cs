@@ -176,7 +176,7 @@ namespace ILA_Server.Controllers
 
             try
             {
-                CourseToken token = new CourseToken { Active = true, Course = course, Token = RandomString(10, false) };
+                CourseToken token = CourseToken.GenerateNewToken(course);
 
                 await _context.CourseTokens.AddAsync(token);
                 await _context.SaveChangesAsync();
@@ -288,21 +288,6 @@ namespace ILA_Server.Controllers
             course.Members.Remove(courseMember);
             await _context.SaveChangesAsync();
             return Ok();
-        }
-
-        private string RandomString(int size, bool lowerCase)
-        {
-            StringBuilder builder = new StringBuilder();
-            Random random = new Random();
-            for (int i = 0; i < size; i++)
-            {
-                var ch = Convert.ToChar(Convert.ToInt32(Math.Floor(26 * random.NextDouble() + 65)));
-                builder.Append(ch);
-            }
-
-            if (lowerCase)
-                return builder.ToString().ToLower();
-            return builder.ToString();
         }
 
         private string GetUserId()

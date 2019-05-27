@@ -14,11 +14,13 @@ namespace ILA_Server.Models
         public int Id { get; set; }
 
         [Required]
+        [Display(Name = "Question")]
         public string PointedQuestion { get; set; }
 
         public Lecture Lecture { get; set; }
         public ILAUser User { get; set; }
 
+        [Display(Name = "Answers")]
         public ICollection<Answer> Answers { get; set; }
     }
 
