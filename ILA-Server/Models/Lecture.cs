@@ -30,6 +30,7 @@ namespace ILA_Server.Models
         [DataType(DataType.DateTime)]
         public DateTime Stop { get; set; }
 
+        public int CourseId { get; set; }
         public Course Course { get; set; }
         public ICollection<Pause> Pauses { get; set; }
         public ICollection<Question> Questions { get; set; }

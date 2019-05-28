@@ -10,9 +10,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ILA_Server.Data;
+using ILA_Server.Hubs;
 using ILA_Server.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ILA_Server.Controllers
 {
@@ -22,10 +24,12 @@ namespace ILA_Server.Controllers
     public class LecturesController : ControllerBase
     {
         private readonly ILADbContext _context;
+        private readonly IHubContext<LectureHub> _hubContext;
 
-        public LecturesController(ILADbContext context)
+        public LecturesController(ILADbContext context, IHubContext<LectureHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         // GET: api/Lectures
@@ -82,7 +86,7 @@ namespace ILA_Server.Controllers
         [HttpPost("pause/{lectureId}")]
         public async Task<ActionResult> PostPause(int lectureId)
         {
-            Lecture lecture = await GetMemberLecture(lectureId);
+            Lecture lecture = await GetOwnerLecture(lectureId);
             ILAUser user = await _context.Users.FindAsync(GetUserId());
 
             if (lecture == null)
@@ -98,9 +102,18 @@ namespace ILA_Server.Controllers
                 User = user,
             };
 
+            if (lecture.Pauses.Any(x => (pause.TimeStamp - x.TimeStamp).TotalSeconds < 120))
+            {
+                return Ok();
+            }
+
             await _context.Pauses.AddAsync(pause);
             await _context.SaveChangesAsync();
 
+            pause.User = null;
+            pause.Lecture = null;
+
+            await _hubContext.Clients.Group(lectureId.ToString()).SendAsync("Pause", pause);
             return Ok();
         }
 

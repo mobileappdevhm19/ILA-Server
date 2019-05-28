@@ -13,16 +13,20 @@ namespace ILA_Server.Models
         public int Id { get; set; }
 
         [Required]
+        [Display(Name = "Title")]
         public string Title { get; set; }
 
         [Required]
         [DefaultValue("")]
         [DataType(DataType.Text)]
+        [Display(Name = "Description")]
         public string Description { get; set; }
 
         [Required]
         [DefaultValue(false)]
+        [Display(Name = "Archived")]
         public bool Archived { get; set; }
+
 
         public ILAUser Owner { get; set; }
 
