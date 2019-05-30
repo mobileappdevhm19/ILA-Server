@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ILA_Server.Data;
 using ILA_Server.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace ILA_Server.Services
 {
@@ -26,9 +27,20 @@ namespace ILA_Server.Services
         {
             ILAUser user = await _context.Users.FindAsync(userId);
 
-            PushTokens pushToken = new PushTokens { DeviceId = deviceId, User = user, Token = token };
+            PushTokens pushToken = await _context.PushTokens.Where(x => x.DeviceId == deviceId).SingleOrDefaultAsync();
 
+            if (pushToken == null)
+            {
+                pushToken = new PushTokens { DeviceId = deviceId, User = user, Token = token };
             await _context.PushTokens.AddAsync(pushToken);
+            }
+            else
+            {
+                pushToken.Token = token;
+                pushToken.User = user;
+                _context.PushTokens.Update(pushToken);
+            }
+
             await _context.SaveChangesAsync();
         }
     }
