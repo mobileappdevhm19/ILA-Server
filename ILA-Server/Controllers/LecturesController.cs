@@ -207,8 +207,43 @@ namespace ILA_Server.Controllers
             return question;
         }
 
+        [HttpPut("questions/{questionId}")]
+        public async Task<ActionResult> PutQuestion(int questionId, [FromBody] QuestionCreate model)
+        {
+            Question question = await _context.Questions
+                .Where(x => x.User.Id == GetUserId())
+                .Where(x => x.Id == questionId)
+                .SingleOrDefaultAsync();
+
+            if (question == null)
+                throw new UserException("Couldn't find a question with the id where you are the owner.", 404);
+
+            question.PointedQuestion = model.PointedQuestion;
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpDelete("questions/{questionId}")]
+        public async Task<ActionResult> DeleteQuestion(int questionId)
+        {
+            Question question = await _context.Questions
+                .Where(x => x.User.Id == GetUserId())
+                .Where(x => x.Id == questionId)
+                .SingleOrDefaultAsync();
+
+            if (question == null)
+                throw new UserException("Couldn't find a question with the id where you are the owner.", 404);
+
+            _context.Questions.Remove(question);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
         [HttpGet("questions/{lectureId}")]
-        public async Task<IEnumerable<Question>> GetQuestion(int lectureId)
+        public async Task<IEnumerable<Question>> GetQuestions(int lectureId)
         {
             return await _context.Questions
                 .Where(x => x.Lecture.Course.Members.Any(y => y.MemberId == GetUserId()))

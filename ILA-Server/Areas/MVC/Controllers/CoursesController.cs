@@ -104,6 +104,52 @@ namespace ILA_Server.Areas.MVC.Controllers
             return View(course);
         }
 
+
+        // POST: MVC/Courses/Edit/5
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Archived")] Course course)
+        {
+            if (id != course.Id)
+            {
+                return NotFound();
+            }
+
+            var courseWithOwner = await _context.Courses.Where(x => x.Owner.Id == GetUserId() && x.Id == id).SingleOrDefaultAsync();
+            if (courseWithOwner == null)
+            {
+                return Forbid();
+            }
+
+            if (ModelState.IsValid)
+            {
+                courseWithOwner.Title = course.Title;
+                courseWithOwner.Description = course.Description;
+                courseWithOwner.Archived = course.Archived;
+                try
+                {
+                    _context.Update(courseWithOwner);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!CourseExists(course.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(course);
+        }
+
+
         [HttpGet]
         public async Task<IActionResult> ChangeTokenState(int id)
         {
@@ -173,52 +219,6 @@ namespace ILA_Server.Areas.MVC.Controllers
             }
 
             return View(token);
-        }
-
-
-
-        // POST: MVC/Courses/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Archived")] Course course)
-        {
-            if (id != course.Id)
-            {
-                return NotFound();
-            }
-
-            var courseWithOwner = await _context.Courses.Where(x => x.Owner.Id == GetUserId() && x.Id == id).SingleOrDefaultAsync();
-            if (courseWithOwner == null)
-            {
-                return Forbid();
-            }
-
-            if (ModelState.IsValid)
-            {
-                courseWithOwner.Title = course.Title;
-                courseWithOwner.Description = course.Description;
-                courseWithOwner.Archived = course.Archived;
-                try
-                {
-                    _context.Update(courseWithOwner);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CourseExists(course.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(course);
         }
 
         // GET: MVC/Courses/Delete/5
