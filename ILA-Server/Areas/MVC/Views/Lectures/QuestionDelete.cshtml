@@ -1,0 +1,27 @@
+﻿@model ILA_Server.Models.Question
+
+@{
+    ViewData["Title"] = "QuestionDelete";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Question</h1>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Question</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.PointedQuestion)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.PointedQuestion)
+        </dd>
+    </dl>
+    
+    <form asp-action="QuestionDelete">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Delete" class="btn btn-danger" />
+    </form>
+</div>
