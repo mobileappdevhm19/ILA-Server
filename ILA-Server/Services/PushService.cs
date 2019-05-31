@@ -13,7 +13,7 @@ namespace ILA_Server.Services
 {
     public interface IPushService
     {
-        Task SaveToken(string userId, string token, string deviceId);
+        Task<PushTokens> SaveToken(string userId, string token, string deviceId);
     }
 
     public class PushService : IPushService
@@ -26,7 +26,7 @@ namespace ILA_Server.Services
         }
 
 
-        public async Task SaveToken(string userId, string token, string deviceId)
+        public async Task<PushTokens> SaveToken(string userId, string token, string deviceId)
         {
             ILAUser user = await _context.Users.FindAsync(userId);
 
@@ -45,6 +45,10 @@ namespace ILA_Server.Services
             }
 
             await _context.SaveChangesAsync();
+
+            pushToken.User = null;
+
+            return pushToken;
         }
 
     }

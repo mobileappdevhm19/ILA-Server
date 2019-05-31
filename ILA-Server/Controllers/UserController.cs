@@ -33,26 +33,24 @@ namespace ILA_Server.Controllers
         }
 
         [HttpPost("token")]
-        public async Task<IActionResult> PostToken([FromBody]SavePushToken model)
+        public async Task<PushTokens> PostToken([FromBody]SavePushToken model)
         {
-            await _pushService.SaveToken(GetUserId(), model.Token, model.DeviceId);
-
-            return Ok();
+            return await _pushService.SaveToken(GetUserId(), model.Token, model.DeviceId);
         }
 
         [HttpGet("pushTest")]
-        public async Task<IActionResult> TestPush()
+        public async Task<TestPush> TestPush()
         {
             ILAUser user = await _dbContext.Users
                 .Where(x => x.Id == GetUserId())
                 .Include(x => x.PushTokens)
                 .SingleOrDefaultAsync();
             if (user == null)
-                return NotFound();
+                throw new UserException(404);
 
             await _fireBaseService.SendPushNotificationMessageToSingleUser(user, "Test", "Ping", null);
 
-            return Ok();
+            return new TestPush { Message = "Send Test Notifications" };
         }
 
         private string GetUserId()
@@ -68,5 +66,10 @@ namespace ILA_Server.Controllers
     {
         public string DeviceId { get; set; }
         public string Token { get; set; }
+    }
+
+    public class TestPush
+    {
+        public string Message { get; set; }
     }
 }

@@ -143,7 +143,7 @@ namespace ILA_Server.Controllers
 
         // DELETE: api/Courses/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Course>> DeleteCourse(int id)
+        public async Task<Course> DeleteCourse(int id)
         {
             var course = await _context.Courses
                 .Include(x => x.Owner)
@@ -191,7 +191,7 @@ namespace ILA_Server.Controllers
         }
 
         [HttpDelete("deleteToken/{tokenId}")]
-        public async Task<ActionResult> DeleteToken(int tokenId)
+        public async Task<Course> DeleteToken(int tokenId)
         {
             var token = await _context.CourseTokens
                 .Include(x => x.Course)
@@ -215,7 +215,7 @@ namespace ILA_Server.Controllers
                 throw new UserException(500);
             }
 
-            return Ok();
+            return await GetOwnerCourse(token.Course.Id);
         }
 
         [HttpPut("updateToken/{tokenId}")]
@@ -248,7 +248,7 @@ namespace ILA_Server.Controllers
         }
 
         [HttpPost("join/{courseId}")]
-        public async Task<ActionResult> JoinCourse(int courseId, string token)
+        public async Task<IEnumerable<Course>> JoinCourse(int courseId, string token)
         {
             var course = await _context.Courses
                 .Include(x => x.Tokens)
@@ -264,14 +264,14 @@ namespace ILA_Server.Controllers
 
                 course.Members.Add(new CourseMember { Course = course, CourseId = course.Id, MemberId = GetUserId() });
                 await _context.SaveChangesAsync();
-                return Ok();
+                return await GetMemberCourses();
             }
 
             throw new UserException("CourseId and/or token wrong.", 404);
         }
 
         [HttpPost("leave/{courseId}")]
-        public async Task<ActionResult> LeaveCourse(int courseId)
+        public async Task<IEnumerable<Course>> LeaveCourse(int courseId)
         {
             var course = await _context.Courses
                 .Where(x => x.Members.Any(y => y.MemberId == GetUserId()))
@@ -287,7 +287,8 @@ namespace ILA_Server.Controllers
 
             course.Members.Remove(courseMember);
             await _context.SaveChangesAsync();
-            return Ok();
+
+            return await GetMemberCourses();
         }
 
         private string GetUserId()
