@@ -25,4 +25,10 @@ namespace ILA_Server.Models
         public int QuestionId { get; set; }
         public Question Question { get; set; }
     }
+
+    public class AnswerCreate
+    {
+        [Required]
+        public string Comment { get; set; }
+    }
 }
