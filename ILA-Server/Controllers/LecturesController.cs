@@ -251,6 +251,79 @@ namespace ILA_Server.Controllers
                 .ToListAsync();
         }
 
+        [HttpGet("question/{questionId}/answers")]
+        public async Task<IEnumerable<Answer>> GetAnswers(int questionId)
+        {
+            return await _context.Answers
+                .Where(x => x.Question.Lecture.Course.Members.Any(y => y.MemberId == GetUserId()))
+                .Include(x => x.Question)
+                .ToListAsync();
+        }
+
+        [HttpPost("question/{questionId}/answer")]
+        public async Task<Answer> PostAnswer(int questionId, [FromBody] AnswerCreate model)
+        {
+            Question question = await _context.Questions
+                .Where(x => x.Lecture.Course.Members.Any(y => y.MemberId == GetUserId()))
+                .Where(x => x.Id == questionId)
+                .SingleOrDefaultAsync();
+            ILAUser user = await _context.Users.FindAsync(GetUserId());
+
+            if (question == null || user == null)
+            {
+                throw new UserException(404);
+            }
+
+            Answer answer = new Answer
+            {
+                Question = question,
+                User = user,
+                Comment = model.Comment,
+            };
+
+            await _context.Answers.AddAsync(answer);
+            await _context.SaveChangesAsync();
+
+            question.User = null;
+            question.Lecture = null;
+            return answer;
+        }
+
+        [HttpPut("answers/{answerId}")]
+        public async Task<ActionResult> PutQuestion(int answerId, [FromBody] AnswerCreate model)
+        {
+            Answer answer = await _context.Answers
+                .Where(x => x.User.Id == GetUserId())
+                .Where(x => x.Id == answerId)
+                .SingleOrDefaultAsync();
+
+            if (answer == null)
+                throw new UserException("Couldn't find a question with the id where you are the owner.", 404);
+
+            answer.Comment = model.Comment;
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpDelete("answers/{answerId}")]
+        public async Task<ActionResult> DeleteAnswer(int answerId)
+        {
+            Answer answer = await _context.Answers
+                .Where(x => x.User.Id == GetUserId())
+                .Where(x => x.Id == answerId)
+                .SingleOrDefaultAsync();
+
+            if (answer == null)
+                throw new UserException("Couldn't find a answer with the id where you are the owner.", 404);
+
+            _context.Answers.Remove(answer);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
         private bool LectureExists(int id)
         {
             return _context.Lectures.Any(e => e.Id == id);

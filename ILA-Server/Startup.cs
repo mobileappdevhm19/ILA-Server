@@ -60,6 +60,7 @@ namespace ILA_Server
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             services.AddScoped<IPushService, PushService>();
+            services.AddSingleton<IFireBaseService, FireBaseService>();
 
             if (HostingEnvironment.IsDevelopment())
             {

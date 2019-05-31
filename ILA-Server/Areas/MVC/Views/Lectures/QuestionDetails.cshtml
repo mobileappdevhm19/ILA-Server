@@ -17,6 +17,9 @@
       @Html.DisplayFor(model => model.PointedQuestion)
     </dd>
   </dl>
+  <p>
+    <a asp-action="CreateAnswer">Create Answer</a>
+  </p>
   <table class="table">
     <thead>
       <tr>
@@ -40,9 +43,9 @@
             @Html.DisplayFor(modelItem => item.User.LastName), @Html.DisplayFor(modelItem => item.User.FirstName)
           </td>
           <td>
-            <!--<a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-            <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-            <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>-->
+            <a asp-action="AnswerEdit" asp-route-id="@item.Id">Edit</a> |
+            <a asp-action="AnswerDetails" asp-route-id="@item.Id">Details</a> |
+            <a asp-action="AnswerDelete" asp-route-id="@item.Id">Delete</a>
           </td>
         </tr>
       }
