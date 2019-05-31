@@ -84,7 +84,7 @@ namespace ILA_Server.Controllers
         }
 
         [HttpPost("pause/{lectureId}")]
-        public async Task<ActionResult> PostPause(int lectureId)
+        public async Task<Pause> PostPause(int lectureId)
         {
             Lecture lecture = await GetOwnerLecture(lectureId);
             ILAUser user = await _context.Users.FindAsync(GetUserId());
@@ -104,7 +104,7 @@ namespace ILA_Server.Controllers
 
             if (lecture.Pauses.Any(x => (pause.TimeStamp - x.TimeStamp).TotalSeconds < 120))
             {
-                return Ok();
+                throw new UserException("You can pause ery 120 seconds only.", 481);
             }
 
             await _context.Pauses.AddAsync(pause);
@@ -114,12 +114,13 @@ namespace ILA_Server.Controllers
             pause.Lecture = null;
 
             await _hubContext.Clients.Group(lectureId.ToString()).SendAsync("Pause", pause);
-            return Ok();
+            
+            return pause;
         }
 
         // PUT: api/Lectures/5
         [HttpPut("{id}")]
-        public async Task<ActionResult> PutLecture(int id, [FromBody] LectureCreateUpdateModel lectureModel)
+        public async Task<Lecture> PutLecture(int id, [FromBody] LectureCreateUpdateModel lectureModel)
         {
             Lecture lecture = await _context.Lectures
                 .Where(x => x.Course.Owner.Id == GetUserId())
@@ -137,7 +138,11 @@ namespace ILA_Server.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok();
+            lecture.Course = null;
+            lecture.Pauses = null;
+            lecture.Questions = null;
+            
+            return lecture;
         }
 
         // POST: api/Lectures
@@ -170,7 +175,7 @@ namespace ILA_Server.Controllers
 
         // DELETE: api/Lectures/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Lecture>> DeleteLecture(int id)
+        public async Task<Lecture> DeleteLecture(int id)
         {
             Lecture lecture = await _context.Lectures
                 .Where(x => x.Course.Owner.Id == GetUserId())
@@ -208,7 +213,7 @@ namespace ILA_Server.Controllers
         }
 
         [HttpPut("questions/{questionId}")]
-        public async Task<ActionResult> PutQuestion(int questionId, [FromBody] QuestionCreate model)
+        public async Task<Question> PutQuestion(int questionId, [FromBody] QuestionCreate model)
         {
             Question question = await _context.Questions
                 .Where(x => x.User.Id == GetUserId())
@@ -222,11 +227,14 @@ namespace ILA_Server.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok();
+            question.User = null;
+            question.Answers = null;
+
+            return question;
         }
 
         [HttpDelete("questions/{questionId}")]
-        public async Task<ActionResult> DeleteQuestion(int questionId)
+        public async Task<Question> DeleteQuestion(int questionId)
         {
             Question question = await _context.Questions
                 .Where(x => x.User.Id == GetUserId())
@@ -239,7 +247,10 @@ namespace ILA_Server.Controllers
             _context.Questions.Remove(question);
             await _context.SaveChangesAsync();
 
-            return Ok();
+            question.User = null;
+            question.Answers = null;
+
+            return question;
         }
 
         [HttpGet("questions/{lectureId}")]
@@ -290,7 +301,7 @@ namespace ILA_Server.Controllers
         }
 
         [HttpPut("answers/{answerId}")]
-        public async Task<ActionResult> PutQuestion(int answerId, [FromBody] AnswerCreate model)
+        public async Task<Answer> PutQuestion(int answerId, [FromBody] AnswerCreate model)
         {
             Answer answer = await _context.Answers
                 .Where(x => x.User.Id == GetUserId())
@@ -304,11 +315,14 @@ namespace ILA_Server.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok();
+            answer.Question = null;
+            answer.User = null;
+
+            return answer;
         }
 
         [HttpDelete("answers/{answerId}")]
-        public async Task<ActionResult> DeleteAnswer(int answerId)
+        public async Task<Answer> DeleteAnswer(int answerId)
         {
             Answer answer = await _context.Answers
                 .Where(x => x.User.Id == GetUserId())
@@ -321,7 +335,10 @@ namespace ILA_Server.Controllers
             _context.Answers.Remove(answer);
             await _context.SaveChangesAsync();
 
-            return Ok();
+            answer.Question = null;
+            answer.User = null;
+
+            return answer;
         }
 
         private bool LectureExists(int id)

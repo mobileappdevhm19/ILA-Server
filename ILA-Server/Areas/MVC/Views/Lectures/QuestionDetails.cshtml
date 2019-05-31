@@ -1,5 +1,5 @@
 ﻿@using ILA_Server.Models
-@model ILA_Server.Models.Question
+@model Question
 
 @{
   ViewData["Title"] = "QuestionDetails";
@@ -18,7 +18,7 @@
     </dd>
   </dl>
   <p>
-    <a asp-action="CreateAnswer">Create Answer</a>
+    <a asp-action="CreateAnswer" asp-route-id="@Model.Id">Create Answer</a>
   </p>
   <table class="table">
     <thead>
