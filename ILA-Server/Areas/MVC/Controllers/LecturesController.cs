@@ -257,7 +257,7 @@ namespace ILA_Server.Areas.MVC.Controllers
             return View(questionWithOwner);
         }
 
-        // GET: MVC/Lectures/Delete/5
+
         public async Task<IActionResult> QuestionDelete(int? id)
         {
             if (id == null)
@@ -274,7 +274,6 @@ namespace ILA_Server.Areas.MVC.Controllers
             return View(question);
         }
 
-        // POST: MVC/Lectures/Delete/5
         [HttpPost, ActionName("QuestionDelete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> QuestionDeleteConfirmed(int id)
@@ -288,6 +287,146 @@ namespace ILA_Server.Areas.MVC.Controllers
             _context.Questions.Remove(question);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> CreateAnswer(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            Question question = await _context.Questions
+                .Where(x => x.Lecture.Course.Owner.Id == GetUserId() && x.Id == id)
+                .SingleOrDefaultAsync();
+
+            if (question == null)
+                return NotFound();
+
+            return View(new Answer { Question = question, QuestionId = id.Value });
+        }
+
+        [HttpPost("CreateAnswer")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateAnswer([Bind("Id,Comment,QuestionId")] Answer answer)
+        {
+            var question = await _context.Questions.FirstOrDefaultAsync(x => x.Id == answer.QuestionId && x.Lecture.Course.Owner.Id == GetUserId());
+            if (question == null)
+            {
+                return Forbid();
+            }
+
+            var user = await _context.Users.FindAsync(GetUserId());
+            if (user == null)
+                return NotFound();
+
+            answer.User = user;
+
+            if (ModelState.IsValid)
+            {
+                _context.Add(answer);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(answer);
+        }
+
+        public async Task<IActionResult> AnswerDelete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var answer = await _context.Answers.Where(x => x.Question.Lecture.Course.Owner.Id == GetUserId() && x.Id == id).SingleOrDefaultAsync();
+            if (answer == null)
+            {
+                return NotFound();
+            }
+
+            return View(answer);
+        }
+
+        [HttpPost, ActionName("AnswerDelete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AnswerDeleteConfirmed(int id)
+        {
+            var answer = await _context.Answers.Where(x => x.Question.Lecture.Course.Owner.Id == GetUserId() && x.Id == id).SingleOrDefaultAsync();
+            if (answer == null)
+            {
+                return NotFound();
+            }
+
+            _context.Answers.Remove(answer);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> AnswerDetails(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var answer = await _context.Answers
+                .Where(x => x.Id == id)
+                .Where(x => x.Question.Lecture.Course.Owner.Id == GetUserId())
+                .Include(x => x.User)
+                .Include(x => x.Question)
+                .ThenInclude(x => x.User)
+                .SingleOrDefaultAsync();
+
+            if (answer == null)
+            {
+                return NotFound();
+            }
+
+            return View(answer);
+        }
+
+        public async Task<ActionResult> AnswerEdit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var answer = await _context.Answers
+                .Where(x => x.Id == id)
+                .Where(x => x.Question.Lecture.Course.Owner.Id == GetUserId())
+                .SingleOrDefaultAsync();
+            if (answer == null)
+            {
+                return NotFound();
+            }
+            return View(answer);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AnswerEdit(int id, [Bind("Id,Comment")] Answer answer)
+        {
+            if (id != answer.Id)
+            {
+                return NotFound();
+            }
+
+            var answerWithOwner = await _context.Answers
+                .Where(x => x.Question.Lecture.Course.Owner.Id == GetUserId() && x.Id == id)
+                .SingleOrDefaultAsync();
+            if (answerWithOwner == null)
+            {
+                return Forbid();
+            }
+
+            if (ModelState.IsValid)
+            {
+                answerWithOwner.Comment = answer.Comment;
+
+                _context.Update(answerWithOwner);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(answerWithOwner);
         }
 
         private bool LectureExists(int id)

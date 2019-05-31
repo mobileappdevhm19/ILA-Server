@@ -48,7 +48,7 @@ namespace ILA_Server.Data
             modelBuilder.Entity<Lecture>()
                 .HasOne(c => c.Course)
                 .WithMany(c => c.Lectures)
-                .HasForeignKey(k=>k.CourseId)
+                .HasForeignKey(k => k.CourseId)
                 .IsRequired();
 
             modelBuilder.Entity<CourseToken>()
@@ -72,6 +72,7 @@ namespace ILA_Server.Data
             modelBuilder.Entity<Answer>()
                 .HasOne(q => q.Question)
                 .WithMany(l => l.Answers)
+                .HasForeignKey(x => x.QuestionId)
                 .IsRequired();
 
             modelBuilder.Entity<PushTokens>()

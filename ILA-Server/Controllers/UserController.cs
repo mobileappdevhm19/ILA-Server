@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.EntityFrameworkCore;
 
 namespace ILA_Server.Controllers
 {
@@ -20,16 +22,35 @@ namespace ILA_Server.Controllers
     public class UserController : ControllerBase
     {
         private readonly IPushService _pushService;
+        private readonly IFireBaseService _fireBaseService;
+        private readonly ILADbContext _dbContext;
 
-        public UserController(IPushService pushService) : base()
+        public UserController(IPushService pushService, IFireBaseService fireBaseService, ILADbContext dbContext) : base()
         {
             _pushService = pushService;
+            _fireBaseService = fireBaseService;
+            _dbContext = dbContext;
         }
 
         [HttpPost("token")]
         public async Task<IActionResult> PostToken([FromBody]SavePushToken model)
         {
             await _pushService.SaveToken(GetUserId(), model.Token, model.DeviceId);
+
+            return Ok();
+        }
+
+        [HttpGet("pushTest")]
+        public async Task<IActionResult> TestPush()
+        {
+            ILAUser user = await _dbContext.Users
+                .Where(x => x.Id == GetUserId())
+                .Include(x => x.PushTokens)
+                .SingleOrDefaultAsync();
+            if (user == null)
+                return NotFound();
+
+            await _fireBaseService.SendPushNotificationMessageToSingleUser(user, "Test", "Ping", null);
 
             return Ok();
         }

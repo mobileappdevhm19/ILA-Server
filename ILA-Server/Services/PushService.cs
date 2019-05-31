@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using ILA_Server.Data;
 using ILA_Server.Models;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace ILA_Server.Services
 {
@@ -32,7 +35,7 @@ namespace ILA_Server.Services
             if (pushToken == null)
             {
                 pushToken = new PushTokens { DeviceId = deviceId, User = user, Token = token };
-            await _context.PushTokens.AddAsync(pushToken);
+                await _context.PushTokens.AddAsync(pushToken);
             }
             else
             {
@@ -43,5 +46,6 @@ namespace ILA_Server.Services
 
             await _context.SaveChangesAsync();
         }
+
     }
 }

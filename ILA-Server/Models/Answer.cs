@@ -22,6 +22,7 @@ namespace ILA_Server.Models
         public int Votes { get; set; }
 
         public ILAUser User { get; set; }
+        public int QuestionId { get; set; }
         public Question Question { get; set; }
     }
 }
