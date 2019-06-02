@@ -189,6 +189,7 @@ namespace ILA_Server.Controllers
         {
             return await _context.Questions
                 .Where(x => x.Lecture.Course.Members.Any(y => y.MemberId == GetUserId()))
+                .Where(x => x.LectureId == lectureId)
                 .Include(x => x.Answers)
                 .ToListAsync();
         }

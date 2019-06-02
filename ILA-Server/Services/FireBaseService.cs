@@ -33,13 +33,25 @@ namespace ILA_Server.Services
 
         public async Task SendPushNotificationMessage(List<ILAUser> users, string title, string body, Dictionary<string, string> data = null)
         {
-            string[] deviceTokens = users.SelectMany(x => x.PushTokens.Select(y => y.Token)).ToArray();
-            if (deviceTokens.Length == 0)
+            if (title.Length > 200)
+                title = title.Substring(0, 196) + " ...";
+
+            if (body.Length > 200)
+                body = body.Substring(0, 196) + " ...";
+
+            await SendPushNotificationMessages(users.SelectMany(x => x.PushTokens.Select(y => y.Token)).ToList(), title, body,
+                data);
+        }
+
+        private async Task SendPushNotificationMessages(List<string> tokens, string title, string body, Dictionary<string, string> data = null)
+        {
+            int tokenCount = tokens.Count <= 100 ? tokens.Count : 100;
+            if (tokenCount == 0)
                 return;
 
             MulticastMessage message = new MulticastMessage
             {
-                Tokens = deviceTokens,
+                Tokens = tokens.Take(tokenCount).ToList(),
                 Notification = new Notification
                 {
                     Title = title,
@@ -50,6 +62,9 @@ namespace ILA_Server.Services
 
             BatchResponse response = await FirebaseMessaging.GetMessaging(_firebaseApp).SendMulticastAsync(message);
             // TODO: handle response
+
+            if (tokens.Count > 100)
+                await SendPushNotificationMessages(tokens.Skip(100).ToList(), title, body, data);
         }
     }
 }

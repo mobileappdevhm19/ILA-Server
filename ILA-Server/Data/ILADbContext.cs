@@ -60,6 +60,7 @@ namespace ILA_Server.Data
             modelBuilder.Entity<CourseNews>()
                 .HasOne(ct => ct.Course)
                 .WithMany(c => c.News)
+                .HasForeignKey(k=>k.CourseId)
                 .IsRequired();
 
             modelBuilder.Entity<Question>()

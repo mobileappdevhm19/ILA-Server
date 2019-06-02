@@ -1,0 +1,30 @@
+﻿@model ILA_Server.Models.CourseNews
+
+@{
+    ViewData["Title"] = "News Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>News Details</h1>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Title)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Title)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Body)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Body)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="EditNews" asp-route-id="@Model.Id">Edit</a> |
+    <a asp-action="Details" asp-route-id="@Model.CourseId">Back to Course</a>
+</div>
