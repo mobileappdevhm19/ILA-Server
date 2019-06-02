@@ -192,6 +192,60 @@ namespace ILA_Server.Areas.MVC.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+
+        [HttpGet]
+        public async Task<IActionResult> CreateQuestion(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            Lecture lecture = await _context.Lectures
+                .Where(x => x.Course.Owner.Id == GetUserId())
+                .SingleOrDefaultAsync(x => x.Id == id);
+
+            if (lecture == null)
+                return NotFound();
+
+            return View(new Question
+            {
+                Lecture = lecture,
+                LectureId = lecture.Id
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateQuestion([Bind("PointedQuestion,LectureId")] Question question)
+        {
+            if (question == null)
+                return NotFound();
+            
+            Lecture lecture = await _context.Lectures
+                .Include(x => x.Questions)
+                .Where(x => x.Course.Owner.Id == GetUserId())
+                .SingleOrDefaultAsync(x => x.Id == question.LectureId);
+
+            if (lecture == null)
+            {
+                return Forbid();
+            }
+
+            var user = await _context.Users.FindAsync(GetUserId());
+            if (user == null)
+                return NotFound();
+
+            question.User = user;
+
+            if (ModelState.IsValid)
+            {
+                _context.Add(question);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Index));
+            }
+            return View(question);
+        }
+
         public async Task<IActionResult> QuestionDetails(int? id)
         {
             if (id == null)
@@ -291,7 +345,7 @@ namespace ILA_Server.Areas.MVC.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpGet("CreateAnswer")]
+        [HttpGet]
         public async Task<IActionResult> CreateAnswer(int? id)
         {
             if (id == null)
@@ -307,7 +361,7 @@ namespace ILA_Server.Areas.MVC.Controllers
             return View(new Answer { Question = question, QuestionId = id.Value });
         }
 
-        [HttpPost("CreateAnswer")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAnswer([Bind("Id,Comment,QuestionId")] Answer answer)
         {

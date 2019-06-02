@@ -65,6 +65,7 @@ namespace ILA_Server.Data
             modelBuilder.Entity<Question>()
                 .HasOne(q => q.Lecture)
                 .WithMany(l => l.Questions)
+                .HasForeignKey(k => k.LectureId)
                 .IsRequired();
             modelBuilder.Entity<Question>()
                 .HasOne(q => q.User)
