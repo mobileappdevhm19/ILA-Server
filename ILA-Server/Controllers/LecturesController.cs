@@ -35,9 +35,8 @@ namespace ILA_Server.Controllers
             _fireBaseService = fireBaseService;
         }
 
-        // GET: api/Lectures
-        [HttpGet("member/{courseId}")]
-        public async Task<IEnumerable<Lecture>> GetMemberLectures(int courseId)
+        [HttpGet("all/{courseId}")]
+        public async Task<IEnumerable<Lecture>> GetAll(int courseId)
         {
             return await _context.Lectures
                 .Where(x => x.Course.Id == courseId)
@@ -47,23 +46,8 @@ namespace ILA_Server.Controllers
                 .ToListAsync();
         }
 
-        // GET: api/Lectures/5
-        [HttpGet("owner/{courseId}")]
-        public async Task<IEnumerable<Lecture>> GetOwnerLectures(int courseId)
-        {
-            return await _context.Lectures
-                .Where(x => x.Course.Id == courseId)
-                .Where(x => x.Course.Owner.Id == GetUserId())
-                .Include(x => x.Questions)
-                .ThenInclude(x => x.Answers)
-                .Include(x => x.Pauses)
-                .ToListAsync();
-        }
-
-
-        // GET: api/Lectures
-        [HttpGet("memberLecture/{lectureId}")]
-        public async Task<Lecture> GetMemberLecture(int lectureId)
+        [HttpGet("{lectureId}")]
+        public async Task<Lecture> Get(int lectureId)
         {
             return await _context.Lectures
                 .Where(x => x.Id == lectureId)
@@ -73,23 +57,14 @@ namespace ILA_Server.Controllers
                 .SingleOrDefaultAsync();
         }
 
-        // GET: api/Lectures/5
-        [HttpGet("ownerLecture/{lectureId}")]
-        public async Task<Lecture> GetOwnerLecture(int lectureId)
-        {
-            return await _context.Lectures
-                .Where(x => x.Id == lectureId)
-                .Where(x => x.Course.Owner.Id == GetUserId())
-                .Include(x => x.Questions)
-                .ThenInclude(x => x.Answers)
-                .Include(x => x.Pauses)
-                .SingleOrDefaultAsync();
-        }
-
-        [HttpPost("pause/{lectureId}")]
+        [HttpPost("{lectureId}/pause")]
         public async Task<Pause> PostPause(int lectureId)
         {
-            Lecture lecture = await GetOwnerLecture(lectureId);
+            Lecture lecture = await _context.Lectures
+                .Include(x => x.Pauses)
+                .ThenInclude(x => x.User)
+                .FirstOrDefaultAsync(x => x.Id == lectureId);
+
             ILAUser user = await _context.Users.FindAsync(GetUserId());
 
             if (lecture == null)
@@ -102,10 +77,10 @@ namespace ILA_Server.Controllers
             {
                 Lecture = lecture,
                 TimeStamp = DateTime.Now.ToUniversalTime(),
-                User = user,
+                User = user
             };
 
-            if (lecture.Pauses.Any(x => (pause.TimeStamp - x.TimeStamp).TotalSeconds < 120))
+            if (lecture.Pauses.Any(x => x.User.Id == GetUserId() && (pause.TimeStamp - x.TimeStamp).TotalSeconds < 120))
             {
                 throw new UserException("You can pause ery 120 seconds only.", 481);
             }
@@ -121,9 +96,8 @@ namespace ILA_Server.Controllers
             return pause;
         }
 
-        // PUT: api/Lectures/5
         [HttpPut("{id}")]
-        public async Task<Lecture> PutLecture(int id, [FromBody] LectureCreateUpdateModel lectureModel)
+        public async Task<Lecture> Put(int id, [FromBody] LectureCreateUpdateModel lectureModel)
         {
             Lecture lecture = await _context.Lectures
                 .Where(x => x.Course.Owner.Id == GetUserId())
@@ -148,56 +122,10 @@ namespace ILA_Server.Controllers
             return lecture;
         }
 
-        // POST: api/Lectures
-        [HttpPost("{courseId}")]
-        public async Task<Lecture> PostLecture(int courseId, [FromBody] LectureCreateUpdateModel lectureModel)
-        {
-            Course course = await _context.Courses
-                .Where(x => x.Owner.Id == GetUserId())
-                .Where(x => x.Id == courseId)
-                .SingleOrDefaultAsync();
-            if (course == null)
-                throw new UserException("Couldn't find a course with the id where you are the owner.", 404);
-
-            Lecture lecture = new Lecture
-            {
-                Course = course,
-                Description = lectureModel.Description,
-                Start = lectureModel.Start,
-                Stop = lectureModel.Stop,
-                Title = lectureModel.Title,
-                Visible = lectureModel.Visible,
-            };
-
-            _context.Lectures.Add(lecture);
-            await _context.SaveChangesAsync();
-
-            lecture.Course.Owner = null;
-            return lecture;
-        }
-
-        // DELETE: api/Lectures/5
-        [HttpDelete("{id}")]
-        public async Task<Lecture> DeleteLecture(int id)
-        {
-            Lecture lecture = await _context.Lectures
-                .Where(x => x.Course.Owner.Id == GetUserId())
-                .Where(x => x.Id == id)
-                .SingleOrDefaultAsync();
-
-            if (lecture == null)
-                throw new UserException("Couldn't find a lecture with the id where you are the owner.", 404);
-
-            _context.Lectures.Remove(lecture);
-            await _context.SaveChangesAsync();
-
-            return lecture;
-        }
-
         [HttpPost("questions/{lectureId}")]
         public async Task<Question> PostQuestion(int lectureId, [FromBody] QuestionCreate model)
         {
-            Lecture lecture = await GetMemberLecture(lectureId);
+            Lecture lecture = await Get(lectureId);
             ILAUser user = await _context.Users.FindAsync(GetUserId());
 
             Question question = new Question
@@ -348,11 +276,6 @@ namespace ILA_Server.Controllers
             answer.User = null;
 
             return answer;
-        }
-
-        private bool LectureExists(int id)
-        {
-            return _context.Lectures.Any(e => e.Id == id);
         }
 
         private string GetUserId()

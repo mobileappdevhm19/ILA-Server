@@ -28,8 +28,8 @@ namespace ILA_Server.Controllers
         }
 
         // GET: api/Courses
-        [HttpGet("member")]
-        public async Task<IEnumerable<Course>> GetMemberCourses()
+        [HttpGet]
+        public async Task<IEnumerable<Course>> Get()
         {
             string userId = GetUserId();
 
@@ -38,39 +38,9 @@ namespace ILA_Server.Controllers
                 .ToListAsync();
         }
 
-        // GET: api/Courses
-        [HttpGet("owner")]
-        public async Task<IEnumerable<Course>> GetOwnerCourses()
-        {
-            string userId = GetUserId();
-
-            return await _context.Courses
-                .Where(x => x.Owner.Id == userId)
-                .Include(x => x.Tokens)
-                .Include(x => x.Lectures)
-                .ToListAsync();
-        }
-
         // GET: api/Courses/5
-        [HttpGet("owner/{id}")]
-        public async Task<Course> GetOwnerCourse(int id)
-        {
-            var course = await _context.Courses
-                .Where(x => x.Id == id)
-                .Where(x => x.Owner.Id == GetUserId())
-                .Include(x => x.Tokens)
-                .Include(x => x.Lectures)
-                .ToListAsync();
-
-            if (course == null || course.Count == 0)
-                throw new UserException(404);
-
-            return course[0];
-        }
-
-        // GET: api/Courses/5
-        [HttpGet("member/{id}")]
-        public async Task<Course> GetMemberCourse(int id)
+        [HttpGet("{id}")]
+        public async Task<Course> Get(int id)
         {
             var course = await _context.Courses
                 .Where(x => x.Id == id)
@@ -82,173 +52,9 @@ namespace ILA_Server.Controllers
 
             return course[0];
         }
-
-        // PUT: api/Courses/5
-        [HttpPut("{id}")]
-        public async Task<Course> PutCourse(int id, [FromBody] CourseCreateUpateModel courseModel)
-        {
-            var course = await _context.Courses
-                .Include(x => x.Owner)
-                .SingleOrDefaultAsync(x => x.Id == id);
-
-            if (course == null)
-                throw new UserException(404);
-
-            if (course.Owner.Id != GetUserId())
-                throw new UserException(403);
-
-            try
-            {
-                course.Title = courseModel.Title;
-                course.Archived = courseModel.Archived;
-                course.Description = courseModel.Description;
-
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                throw new UserException(500);
-            }
-
-            course.Owner = null;
-            return course;
-        }
-
-        // POST: api/Courses
-        [HttpPost]
-        public async Task<Course> PostCourse([FromBody] CourseCreateUpateModel courseModel)
-        {
-            ILAUser user = await _context.Users.FindAsync(GetUserId());
-            Course course = new Course
-            {
-                Archived = courseModel.Archived,
-                Owner = user,
-                Description = courseModel.Description,
-                Title = courseModel.Title,
-            };
-
-            try
-            {
-                _context.Courses.Add(course);
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                throw new UserException(500);
-            }
-
-            course.Owner = null;
-            return course;
-        }
-
-        // DELETE: api/Courses/5
-        [HttpDelete("{id}")]
-        public async Task<Course> DeleteCourse(int id)
-        {
-            var course = await _context.Courses
-                .Include(x => x.Owner)
-                .SingleOrDefaultAsync(x => x.Id == id);
-
-            if (course == null)
-                throw new UserException(404);
-
-            if (course.Owner.Id != GetUserId())
-                throw new UserException(403);
-
-            _context.Courses.Remove(course);
-            await _context.SaveChangesAsync();
-
-            return course;
-        }
-
-        [HttpPost("generateToken/{courseId}")]
-        public async Task<CourseToken> GenerateToken(int courseId)
-        {
-            var course = await _context.Courses
-                .Include(x => x.Owner)
-                .SingleOrDefaultAsync(x => x.Id == courseId);
-
-            if (course == null)
-                throw new UserException(404);
-
-            if (course.Owner.Id != GetUserId())
-                throw new UserException(403);
-
-            try
-            {
-                CourseToken token = CourseToken.GenerateNewToken(course);
-
-                await _context.CourseTokens.AddAsync(token);
-                await _context.SaveChangesAsync();
-
-                token.Course = null;
-                return token;
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                throw new UserException(500);
-            }
-        }
-
-        [HttpDelete("deleteToken/{tokenId}")]
-        public async Task<Course> DeleteToken(int tokenId)
-        {
-            var token = await _context.CourseTokens
-                .Include(x => x.Course)
-                .ThenInclude(x => x.Owner)
-                .SingleOrDefaultAsync(x => x.Id == tokenId);
-
-            if (token == null)
-                throw new UserException(404);
-
-            if (token.Course.Owner.Id != GetUserId())
-                throw new UserException(403);
-
-            try
-            {
-                _context.CourseTokens.Remove(token);
-
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                throw new UserException(500);
-            }
-
-            return await GetOwnerCourse(token.Course.Id);
-        }
-
-        [HttpPut("updateToken/{tokenId}")]
-        public async Task<CourseToken> UpdateToken(int tokenId, bool state)
-        {
-            var token = await _context.CourseTokens
-                .Include(x => x.Course)
-                .ThenInclude(x => x.Owner)
-                .SingleOrDefaultAsync(x => x.Id == tokenId);
-
-            if (token == null)
-                throw new UserException(404);
-
-            if (token.Course.Owner.Id != GetUserId())
-                throw new UserException(403);
-
-            try
-            {
-                token.Active = state;
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                throw new UserException(500);
-            }
-
-            token.Course = null;
-
-            return token;
-        }
-
-        [HttpPost("join/{courseId}")]
-        public async Task<IEnumerable<Course>> JoinCourse(int courseId, string token)
+        
+        [HttpPost("{courseId}/join")]
+        public async Task<IEnumerable<Course>> Join(int courseId, string token)
         {
             var course = await _context.Courses
                 .Include(x => x.Tokens)
@@ -264,14 +70,14 @@ namespace ILA_Server.Controllers
 
                 course.Members.Add(new CourseMember { Course = course, CourseId = course.Id, MemberId = GetUserId() });
                 await _context.SaveChangesAsync();
-                return await GetMemberCourses();
+                return await Get();
             }
 
             throw new UserException("CourseId and/or token wrong.", 404);
         }
 
-        [HttpPost("leave/{courseId}")]
-        public async Task<IEnumerable<Course>> LeaveCourse(int courseId)
+        [HttpPost("{courseId}/leave")]
+        public async Task<IEnumerable<Course>> Leave(int courseId)
         {
             var course = await _context.Courses
                 .Where(x => x.Members.Any(y => y.MemberId == GetUserId()))
@@ -288,7 +94,7 @@ namespace ILA_Server.Controllers
             course.Members.Remove(courseMember);
             await _context.SaveChangesAsync();
 
-            return await GetMemberCourses();
+            return await Get();
         }
 
         private string GetUserId()
