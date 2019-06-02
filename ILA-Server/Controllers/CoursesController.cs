@@ -33,9 +33,18 @@ namespace ILA_Server.Controllers
         {
             string userId = GetUserId();
 
-            return await _context.Courses
+            var courses = await _context.Courses
+                .Include(x => x.News)
                 .Where(x => x.Members.Any(y => y.MemberId == userId))
                 .ToListAsync();
+            
+            foreach (Course course in courses)
+            {
+                course.Members = null;
+                course.Owner = null;
+            }
+
+            return courses;
         }
 
         // GET: api/Courses/5
@@ -43,16 +52,19 @@ namespace ILA_Server.Controllers
         public async Task<Course> Get(int id)
         {
             var course = await _context.Courses
-                .Where(x => x.Id == id)
+                .Include(x => x.News)
                 .Where(x => x.Members.Any(y => y.MemberId == GetUserId()))
-                .ToListAsync();
+                .FirstOrDefaultAsync(x => x.Id == id);
 
-            if (course == null || course.Count == 0)
+            if (course == null)
                 throw new UserException(404);
 
-            return course[0];
+            course.Owner = null;
+            course.Members = null;
+
+            return course;
         }
-        
+
         [HttpPost("{courseId}/join")]
         public async Task<IEnumerable<Course>> Join(int courseId, string token)
         {

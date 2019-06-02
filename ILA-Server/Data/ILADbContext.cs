@@ -13,6 +13,7 @@ namespace ILA_Server.Data
         public DbSet<CourseToken> CourseTokens { get; set; }
         public DbSet<Pause> Pauses { get; set; }
         public DbSet<PushTokens> PushTokens { get; set; }
+        public DbSet<CourseNews> CourseNews { get; set; }
 
         public ILADbContext(DbContextOptions options) : base(options) { }
 
@@ -54,6 +55,11 @@ namespace ILA_Server.Data
             modelBuilder.Entity<CourseToken>()
                 .HasOne(ct => ct.Course)
                 .WithMany(c => c.Tokens)
+                .IsRequired();
+
+            modelBuilder.Entity<CourseNews>()
+                .HasOne(ct => ct.Course)
+                .WithMany(c => c.News)
                 .IsRequired();
 
             modelBuilder.Entity<Question>()

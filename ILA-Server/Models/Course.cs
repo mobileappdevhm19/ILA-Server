@@ -33,6 +33,8 @@ namespace ILA_Server.Models
         public ICollection<CourseMember> Members { get; set; }
         public ICollection<Lecture> Lectures { get; set; }
         public ICollection<CourseToken> Tokens { get; set; }
+        public ICollection<CourseNews> News { get; set; }
+        
     }
 
     public class CourseMember
