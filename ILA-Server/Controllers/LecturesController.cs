@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using ILA_Server.Data;
 using ILA_Server.Hubs;
 using ILA_Server.Models;
+using ILA_Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -25,11 +26,13 @@ namespace ILA_Server.Controllers
     {
         private readonly ILADbContext _context;
         private readonly IHubContext<LectureHub> _hubContext;
+        private readonly IFireBaseService _fireBaseService;
 
-        public LecturesController(ILADbContext context, IHubContext<LectureHub> hubContext)
+        public LecturesController(ILADbContext context, IHubContext<LectureHub> hubContext, IFireBaseService fireBaseService)
         {
             _context = context;
             _hubContext = hubContext;
+            _fireBaseService = fireBaseService;
         }
 
         // GET: api/Lectures
@@ -114,7 +117,7 @@ namespace ILA_Server.Controllers
             pause.Lecture = null;
 
             await _hubContext.Clients.Group(lectureId.ToString()).SendAsync("Pause", pause);
-            
+
             return pause;
         }
 
@@ -141,7 +144,7 @@ namespace ILA_Server.Controllers
             lecture.Course = null;
             lecture.Pauses = null;
             lecture.Questions = null;
-            
+
             return lecture;
         }
 
@@ -277,6 +280,8 @@ namespace ILA_Server.Controllers
             Question question = await _context.Questions
                 .Where(x => x.Lecture.Course.Members.Any(y => y.MemberId == GetUserId()))
                 .Where(x => x.Id == questionId)
+                .Include(x => x.User)
+                .ThenInclude(x => x.PushTokens)
                 .SingleOrDefaultAsync();
             ILAUser user = await _context.Users.FindAsync(GetUserId());
 
@@ -295,8 +300,12 @@ namespace ILA_Server.Controllers
             await _context.Answers.AddAsync(answer);
             await _context.SaveChangesAsync();
 
+            await _fireBaseService.SendPushNotificationMessageToSingleUser(question.User, "New Answer",
+                "Someone answerd your question", new Dictionary<string, string> { { "questionId", question.Id.ToString() } });
+
             question.User = null;
             question.Lecture = null;
+
             return answer;
         }
 

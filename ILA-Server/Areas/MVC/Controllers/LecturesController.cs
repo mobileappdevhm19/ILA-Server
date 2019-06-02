@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ILA_Server.Data;
 using ILA_Server.Models;
+using ILA_Server.Services;
 using Microsoft.AspNetCore.Authorization;
 
 namespace ILA_Server.Areas.MVC.Controllers
@@ -19,10 +20,11 @@ namespace ILA_Server.Areas.MVC.Controllers
     public class LecturesController : Controller
     {
         private readonly ILADbContext _context;
-
-        public LecturesController(ILADbContext context)
+        private readonly IFireBaseService _fireBaseService;
+        public LecturesController(ILADbContext context, IFireBaseService fireBaseService)
         {
             _context = context;
+            _fireBaseService = fireBaseService;
         }
 
         // GET: MVC/Lectures
@@ -289,6 +291,7 @@ namespace ILA_Server.Areas.MVC.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet("CreateAnswer")]
         public async Task<IActionResult> CreateAnswer(int? id)
         {
             if (id == null)
@@ -308,7 +311,11 @@ namespace ILA_Server.Areas.MVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAnswer([Bind("Id,Comment,QuestionId")] Answer answer)
         {
-            var question = await _context.Questions.FirstOrDefaultAsync(x => x.Id == answer.QuestionId && x.Lecture.Course.Owner.Id == GetUserId());
+            var question = await _context.Questions
+                .Include(x => x.User)
+                .ThenInclude(x => x.PushTokens)
+                .FirstOrDefaultAsync(x => x.Id == answer.QuestionId && x.Lecture.Course.Owner.Id == GetUserId());
+
             if (question == null)
             {
                 return Forbid();
@@ -324,6 +331,9 @@ namespace ILA_Server.Areas.MVC.Controllers
             {
                 _context.Add(answer);
                 await _context.SaveChangesAsync();
+                await _fireBaseService.SendPushNotificationMessageToSingleUser(question.User, "New Answer",
+                    "Someone answerd your question", new Dictionary<string, string> { { "questionId", question.Id.ToString() } });
+
                 return RedirectToAction(nameof(Index));
             }
             return View(answer);
