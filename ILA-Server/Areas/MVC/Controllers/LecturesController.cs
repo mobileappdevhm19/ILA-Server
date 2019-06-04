@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ILA_Server.Data;
 using ILA_Server.Models;
+using ILA_Server.Services;
 using Microsoft.AspNetCore.Authorization;
 
 namespace ILA_Server.Areas.MVC.Controllers
@@ -19,10 +20,11 @@ namespace ILA_Server.Areas.MVC.Controllers
     public class LecturesController : Controller
     {
         private readonly ILADbContext _context;
-
-        public LecturesController(ILADbContext context)
+        private readonly IFireBaseService _fireBaseService;
+        public LecturesController(ILADbContext context, IFireBaseService fireBaseService)
         {
             _context = context;
+            _fireBaseService = fireBaseService;
         }
 
         // GET: MVC/Lectures
@@ -190,6 +192,60 @@ namespace ILA_Server.Areas.MVC.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+
+        [HttpGet]
+        public async Task<IActionResult> CreateQuestion(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            Lecture lecture = await _context.Lectures
+                .Where(x => x.Course.Owner.Id == GetUserId())
+                .SingleOrDefaultAsync(x => x.Id == id);
+
+            if (lecture == null)
+                return NotFound();
+
+            return View(new Question
+            {
+                Lecture = lecture,
+                LectureId = lecture.Id
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateQuestion([Bind("PointedQuestion,LectureId")] Question question)
+        {
+            if (question == null)
+                return NotFound();
+            
+            Lecture lecture = await _context.Lectures
+                .Include(x => x.Questions)
+                .Where(x => x.Course.Owner.Id == GetUserId())
+                .SingleOrDefaultAsync(x => x.Id == question.LectureId);
+
+            if (lecture == null)
+            {
+                return Forbid();
+            }
+
+            var user = await _context.Users.FindAsync(GetUserId());
+            if (user == null)
+                return NotFound();
+
+            question.User = user;
+
+            if (ModelState.IsValid)
+            {
+                _context.Add(question);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Index));
+            }
+            return View(question);
+        }
+
         public async Task<IActionResult> QuestionDetails(int? id)
         {
             if (id == null)
@@ -289,6 +345,7 @@ namespace ILA_Server.Areas.MVC.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet]
         public async Task<IActionResult> CreateAnswer(int? id)
         {
             if (id == null)
@@ -304,11 +361,15 @@ namespace ILA_Server.Areas.MVC.Controllers
             return View(new Answer { Question = question, QuestionId = id.Value });
         }
 
-        [HttpPost("CreateAnswer")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAnswer([Bind("Id,Comment,QuestionId")] Answer answer)
         {
-            var question = await _context.Questions.FirstOrDefaultAsync(x => x.Id == answer.QuestionId && x.Lecture.Course.Owner.Id == GetUserId());
+            var question = await _context.Questions
+                .Include(x => x.User)
+                .ThenInclude(x => x.PushTokens)
+                .FirstOrDefaultAsync(x => x.Id == answer.QuestionId && x.Lecture.Course.Owner.Id == GetUserId());
+
             if (question == null)
             {
                 return Forbid();
@@ -324,6 +385,9 @@ namespace ILA_Server.Areas.MVC.Controllers
             {
                 _context.Add(answer);
                 await _context.SaveChangesAsync();
+                _fireBaseService.SendPushNotificationMessageToSingleUser(question.User, "New Answer",
+                    "Someone answerd your question", new Dictionary<string, string> { { "questionId", question.Id.ToString() } });
+
                 return RedirectToAction(nameof(Index));
             }
             return View(answer);

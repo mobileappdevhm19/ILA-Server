@@ -74,40 +74,78 @@
 </div>
 <div>
   <hr />
-  <h4>Tokens</h4>
+  <h4>News</h4>
   <p>
-    <a class="btn btn-primary" asp-action="CreateToken"asp-route-id="@Model.Id">Create New Token</a>
+    <a class="btn btn-primary" asp-action="CreateNews" asp-route-id="@Model.Id">Create News</a>
   </p>
   <table class="table">
     <thead>
-    <tr>
-      <th>
-        @Html.DisplayNameForInnerType((CourseToken item) => item.Token)
-      </th>
-      <th>
-        @Html.DisplayNameForInnerType((CourseToken item) => item.Active)
-      </th>
-
-      <th></th>
-    </tr>
+      <tr>
+        <th>
+          @Html.DisplayNameForInnerType((CourseNews item) => item.Title)
+        </th>
+        <th>
+          @Html.DisplayNameForInnerType((CourseNews item) => item.Body)
+        </th>
+        <th></th>
+      </tr>
     </thead>
     <tbody>
-    @foreach (var item in Model.Tokens)
-    {
+      @foreach (var item in Model.News)
+      {
+        <tr>
+          <td>
+            @Html.DisplayFor(modelItem => item.Title)
+          </td>
+          <td>
+            @Html.DisplayFor(modelItem => item.BodyTrimmed)
+          </td>
+          <td>
+            <a asp-action="EditNews" asp-route-id="@item.Id">Edit</a> |
+            <a asp-action="DetailsNews" asp-route-id="@item.Id">Details</a> |
+            <a asp-action="DeleteNews" asp-route-id="@item.Id">Delete</a>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+<div>
+  <hr />
+  <h4>Tokens</h4>
+  <p>
+    <a class="btn btn-primary" asp-action="CreateToken" asp-route-id="@Model.Id">Create New Token</a>
+  </p>
+  <table class="table">
+    <thead>
       <tr>
-        <td>
-          @Html.DisplayFor(modelItem => item.Token)
-        </td>
-        <td>
-          @Html.DisplayFor(modelItem => item.Active)
-        </td>
-        <td>
-          <a asp-action="ChangeTokenState" asp-route-id="@item.Id">Change visibility</a> |
-          <a asp-action="ShowTokenQr" asp-route-id="@item.Id">Show QR-Code</a> |
-          <a asp-action="DeleteToken" asp-route-id="@item.Id">Delete Token</a>
-        </td>
+        <th>
+          @Html.DisplayNameForInnerType((CourseToken item) => item.Token)
+        </th>
+        <th>
+          @Html.DisplayNameForInnerType((CourseToken item) => item.Active)
+        </th>
+
+        <th></th>
       </tr>
-    }
+    </thead>
+    <tbody>
+      @foreach (var item in Model.Tokens)
+      {
+        <tr>
+          <td>
+            @Html.DisplayFor(modelItem => item.Token)
+          </td>
+          <td>
+            @Html.DisplayFor(modelItem => item.Active)
+          </td>
+          <td>
+            <a asp-action="ChangeTokenState" asp-route-id="@item.Id">Change visibility</a> |
+            <a asp-action="ShowTokenQr" asp-route-id="@item.Id">Show QR-Code</a> |
+            <a asp-action="DeleteToken" asp-route-id="@item.Id">Delete Token</a>
+          </td>
+        </tr>
+      }
     </tbody>
   </table>
 </div>
@@ -116,31 +154,31 @@
   <h4>Members</h4>
   <table class="table">
     <thead>
-    <tr>
-      <th>
-        @Html.DisplayNameForInnerType((ILAUser item) => item.FirstName)
-      </th>
-      <th>
-        @Html.DisplayNameForInnerType((ILAUser item) => item.LastName)
-      </th>
-      <th></th>
-    </tr>
+      <tr>
+        <th>
+          @Html.DisplayNameForInnerType((ILAUser item) => item.FirstName)
+        </th>
+        <th>
+          @Html.DisplayNameForInnerType((ILAUser item) => item.LastName)
+        </th>
+        <th></th>
+      </tr>
     </thead>
     <tbody>
-    @foreach (var item in Model.Members)
-    {
-      <tr>
-        <td>
-          @Html.DisplayFor(modelItem => item.Member.FirstName)
-        </td>
-        <td>
-          @Html.DisplayFor(modelItem => item.Member.LastName)
-        </td>
-        <td>
-          <!-- TODO: remove user button -->
-        </td>
-      </tr>
-    }
+      @foreach (var item in Model.Members)
+      {
+        <tr>
+          <td>
+            @Html.DisplayFor(modelItem => item.Member.FirstName)
+          </td>
+          <td>
+            @Html.DisplayFor(modelItem => item.Member.LastName)
+          </td>
+          <td>
+            <!-- TODO: remove user button -->
+          </td>
+        </tr>
+      }
     </tbody>
   </table>
 </div>

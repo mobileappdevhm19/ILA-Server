@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ILA_Server.Data;
 using ILA_Server.Models;
+using ILA_Server.Services;
 using Microsoft.AspNetCore.Authorization;
 
 namespace ILA_Server.Areas.MVC.Controllers
@@ -19,10 +20,12 @@ namespace ILA_Server.Areas.MVC.Controllers
     public class CoursesController : Controller
     {
         private readonly ILADbContext _context;
+        private readonly IFireBaseService _fireBaseService;
 
-        public CoursesController(ILADbContext context)
+        public CoursesController(ILADbContext context, IFireBaseService fireBaseService)
         {
             _context = context;
+            _fireBaseService = fireBaseService;
         }
 
         // GET: MVC/Courses
@@ -48,6 +51,7 @@ namespace ILA_Server.Areas.MVC.Controllers
                 .Include(x => x.Tokens)
                 .Include(x => x.Members)
                 .ThenInclude(y => y.Member)
+                .Include(x => x.News)
                 .SingleOrDefaultAsync();
 
             if (course == null)
@@ -252,6 +256,178 @@ namespace ILA_Server.Areas.MVC.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        #region News
+
+
+        [HttpGet]
+        public async Task<IActionResult> CreateNews(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            Course course = await _context.Courses
+                .Where(x => x.Owner.Id == GetUserId())
+                .SingleOrDefaultAsync(x => x.Id == id);
+
+            if (course == null)
+                return NotFound();
+
+            return View(new CourseNews
+            {
+                Course = course,
+                CourseId = course.Id,
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateNews([Bind("Title,Body,CourseId")] CourseNews news)
+        {
+            if (news == null)
+                return NotFound();
+
+            Course course = await _context.Courses
+                .Include(x => x.Members)
+                .ThenInclude(x => x.Member)
+                .ThenInclude(x => x.PushTokens)
+                .Where(x => x.Owner.Id == GetUserId())
+                .SingleOrDefaultAsync(x => x.Id == news.CourseId);
+
+            if (course == null)
+            {
+                return Forbid();
+            }
+
+            news.Course = course;
+
+            if (ModelState.IsValid)
+            {
+                _context.Add(news);
+                await _context.SaveChangesAsync();
+
+                _fireBaseService.SendPushNotificationMessage(course.Members.Select(x => x.Member).ToList(),
+                    $"{course.Title}: {news.Title}", news.Body);
+
+                return RedirectToAction("Details", new { id = news.CourseId });
+            }
+            return View(news);
+        }
+
+        public async Task<IActionResult> DetailsNews(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var news = await _context.CourseNews
+                .Where(x => x.Course.Owner.Id == GetUserId())
+                .SingleOrDefaultAsync(x => x.Id == id);
+
+            if (news == null)
+            {
+                return NotFound();
+            }
+
+            news.Course = null;
+
+            return View(news);
+        }
+
+        public async Task<IActionResult> DeleteNews(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var news = await _context.CourseNews
+                .Where(x => x.Course.Owner.Id == GetUserId())
+                .SingleOrDefaultAsync(x => x.Id == id);
+
+            if (news == null)
+            {
+                return NotFound();
+            }
+
+            return View(news);
+        }
+
+        [HttpPost, ActionName("DeleteNews")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmedNews(int id)
+        {
+            var news = await _context.CourseNews
+                .Where(x => x.Course.Owner.Id == GetUserId())
+                .SingleOrDefaultAsync(x => x.Id == id);
+            if (news == null)
+            {
+                return NotFound();
+            }
+
+            _context.CourseNews.Remove(news);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Details), new { id = news.CourseId });
+        }
+
+        public async Task<ActionResult> EditNews(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var news = await _context.CourseNews
+                .Where(x => x.Course.Owner.Id == GetUserId())
+                .SingleOrDefaultAsync(x => x.Id == id);
+
+            if (news == null)
+            {
+                return NotFound();
+            }
+            return View(news);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditNews(int id, [Bind("Id,Title,Body")] CourseNews news)
+        {
+            if (id != news.Id)
+            {
+                return NotFound();
+            }
+
+            var newsWithOwner = await _context.CourseNews
+                .Include(x => x.Course)
+                .ThenInclude(x => x.Members)
+                .ThenInclude(x => x.Member)
+                .ThenInclude(x => x.PushTokens)
+                .Where(x => x.Course.Owner.Id == GetUserId())
+                .SingleOrDefaultAsync(x => x.Id == id);
+
+            if (newsWithOwner == null)
+            {
+                return Forbid();
+            }
+
+            if (ModelState.IsValid)
+            {
+                newsWithOwner.Title = news.Title;
+                newsWithOwner.Body = news.Body;
+
+                _context.Update(newsWithOwner);
+                await _context.SaveChangesAsync();
+
+                _fireBaseService.SendPushNotificationMessage(newsWithOwner.Course.Members.Select(x => x.Member).ToList(),
+                    $"Change - {newsWithOwner.Course.Title}: {news.Title}", news.Body);
+
+                return RedirectToAction(nameof(Details), new { id = newsWithOwner.CourseId });
+            }
+            return View(newsWithOwner);
+        }
+
+        #endregion
 
         private bool CourseExists(int id)
         {

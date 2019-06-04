@@ -61,6 +61,9 @@ namespace ILA_Server
 
             services.AddScoped<IPushService, PushService>();
             services.AddSingleton<IFireBaseService, FireBaseService>();
+            
+            services.AddSingleton<IFireBaseTaskQueue, FireBaseTaskQueue>();
+            services.AddHostedService<FireBaseHostedService>();
 
             if (HostingEnvironment.IsDevelopment())
             {
@@ -178,13 +181,10 @@ namespace ILA_Server
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
-            });
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "areas",
-                    template: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
-                );
+                routes.MapAreaRoute(
+                    name: "MVC_route",
+                    areaName: "MVC",
+                    template: "MVC/{controller}/{action=Index}/{id?}");
             });
 
             app.UseSignalR(routes =>

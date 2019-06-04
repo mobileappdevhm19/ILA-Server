@@ -48,7 +48,10 @@
   <canvas id="pauseChart" width="400" height="200"></canvas>
 </div>
 <div>
-  <h4>Questions</h4>
+  <h4>Student Questions</h4>
+  <p>
+    <a asp-action="CreateQuestion" asp-route-id="@Model.Id">Create New Student Question</a>
+  </p>
   <table class="table">
     <thead>
       <tr>
