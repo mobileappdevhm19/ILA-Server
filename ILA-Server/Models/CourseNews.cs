@@ -21,7 +21,7 @@ namespace ILA_Server.Models
         public string Body { get; set; }
 
         [NotMapped]
-        public string BodyTrimmed => Body.Substring(0, 50)+" ...";
+        public string BodyTrimmed => Body.Length > 50 ? Body.Substring(0, 50) + " ..." : Body;
 
         public int CourseId { get; set; }
         public Course Course { get; set; }

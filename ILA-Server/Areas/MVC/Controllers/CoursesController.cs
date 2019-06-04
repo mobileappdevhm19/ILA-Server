@@ -309,7 +309,7 @@ namespace ILA_Server.Areas.MVC.Controllers
                 await _fireBaseService.SendPushNotificationMessage(course.Members.Select(x => x.Member).ToList(),
                     $"{course.Title}: {news.Title}", news.Body);
 
-                return RedirectToAction("Details", news.CourseId);
+                return RedirectToAction("Details", new { id = news.CourseId });
             }
             return View(news);
         }
