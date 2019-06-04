@@ -38,6 +38,21 @@ namespace ILA_Server.Controllers
             return await _pushService.SaveToken(GetUserId(), model.Token, model.DeviceId);
         }
 
+        [HttpDelete("token")]
+        public async Task<ActionResult> DeleteToken(string deviceId)
+        {
+            try
+            {
+                await _pushService.DeleteToken(GetUserId(), deviceId);
+            }
+            catch
+            {
+                throw new UserException(404);
+            }
+
+            return NoContent();
+        }
+
         [HttpGet("pushTest")]
         public async Task<TestPush> TestPush()
         {

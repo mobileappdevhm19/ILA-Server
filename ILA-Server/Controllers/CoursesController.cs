@@ -56,6 +56,8 @@ namespace ILA_Server.Controllers
                 .Where(x => x.Members.Any(y => y.MemberId == GetUserId()))
                 .FirstOrDefaultAsync(x => x.Id == id);
 
+            course.News = course.News.OrderByDescending(x => x.Id).ToList();
+
             if (course == null)
                 throw new UserException(404);
 
