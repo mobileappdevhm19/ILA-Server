@@ -306,7 +306,7 @@ namespace ILA_Server.Areas.MVC.Controllers
                 _context.Add(news);
                 await _context.SaveChangesAsync();
 
-                await _fireBaseService.SendPushNotificationMessage(course.Members.Select(x => x.Member).ToList(),
+                _fireBaseService.SendPushNotificationMessage(course.Members.Select(x => x.Member).ToList(),
                     $"{course.Title}: {news.Title}", news.Body);
 
                 return RedirectToAction("Details", new { id = news.CourseId });
@@ -419,7 +419,7 @@ namespace ILA_Server.Areas.MVC.Controllers
                 _context.Update(newsWithOwner);
                 await _context.SaveChangesAsync();
 
-                await _fireBaseService.SendPushNotificationMessage(newsWithOwner.Course.Members.Select(x => x.Member).ToList(),
+                _fireBaseService.SendPushNotificationMessage(newsWithOwner.Course.Members.Select(x => x.Member).ToList(),
                     $"Change - {newsWithOwner.Course.Title}: {news.Title}", news.Body);
 
                 return RedirectToAction(nameof(Details), new { id = newsWithOwner.CourseId });

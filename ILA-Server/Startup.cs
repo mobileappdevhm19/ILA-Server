@@ -61,6 +61,9 @@ namespace ILA_Server
 
             services.AddScoped<IPushService, PushService>();
             services.AddSingleton<IFireBaseService, FireBaseService>();
+            
+            services.AddSingleton<IFireBaseTaskQueue, FireBaseTaskQueue>();
+            services.AddHostedService<FireBaseHostedService>();
 
             if (HostingEnvironment.IsDevelopment())
             {

@@ -48,7 +48,7 @@ namespace ILA_Server.Controllers
             if (user == null)
                 throw new UserException(404);
 
-            await _fireBaseService.SendPushNotificationMessageToSingleUser(user, "Test", "Ping", null);
+            _fireBaseService.SendPushNotificationMessageToSingleUser(user, "Test", "Ping", null);
 
             return new TestPush { Message = "Send Test Notifications" };
         }

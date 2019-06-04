@@ -229,7 +229,7 @@ namespace ILA_Server.Controllers
             await _context.Answers.AddAsync(answer);
             await _context.SaveChangesAsync();
 
-            await _fireBaseService.SendPushNotificationMessageToSingleUser(question.User, "New Answer",
+            _fireBaseService.SendPushNotificationMessageToSingleUser(question.User, "New Answer",
                 "Someone answerd your question", new Dictionary<string, string> { { "questionId", question.Id.ToString() } });
 
             question.User = null;

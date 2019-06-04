@@ -385,7 +385,7 @@ namespace ILA_Server.Areas.MVC.Controllers
             {
                 _context.Add(answer);
                 await _context.SaveChangesAsync();
-                await _fireBaseService.SendPushNotificationMessageToSingleUser(question.User, "New Answer",
+                _fireBaseService.SendPushNotificationMessageToSingleUser(question.User, "New Answer",
                     "Someone answerd your question", new Dictionary<string, string> { { "questionId", question.Id.ToString() } });
 
                 return RedirectToAction(nameof(Index));
