@@ -1,0 +1,75 @@
+﻿@using ILA_Server.Models
+@model Question
+
+@{
+  ViewData["Title"] = "QuestionDetails";
+  Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Question</h1>
+<div>
+  <hr />
+  <dl class="row">
+    <dt class="col-sm-2">
+      @Html.DisplayNameFor(model => model.Title)
+    </dt>
+    <dd class="col-sm-10">
+      @Html.DisplayFor(model => model.Title)
+    </dd>
+    <dt class="col-sm-2">
+      @Html.DisplayNameFor(model => model.PointedQuestion)
+    </dt>
+    <dd class="col-sm-10">
+      @Html.DisplayFor(model => model.PointedQuestion)
+    </dd>
+    <dt class="col-sm-2">
+      @Html.DisplayNameFor(model => model.CreatedAt)
+    </dt>
+    <dd class="col-sm-10">
+      @Html.DisplayFor(model => model.CreatedAt)
+    </dd>
+  </dl>
+  <p>
+    <a asp-action="CreateAnswer" asp-route-id="@Model.Id">Create Answer</a>
+  </p>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>
+          @Html.DisplayNameForInnerType((Answer model) => model.Comment)
+        </th>
+        <th>
+          @Html.DisplayNameForInnerType((Answer model) => model.User)
+        </th>
+        <th>
+          @Html.DisplayNameForInnerType((Answer model) => model.CreatedAt)
+        </th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var item in Model.Answers)
+      {
+        <tr>
+          <td>
+            @Html.DisplayFor(modelItem => item.Comment)
+          </td>
+          <td>
+            @Html.DisplayFor(modelItem => item.User.LastName), @Html.DisplayFor(modelItem => item.User.FirstName)
+          </td>
+          <th>
+            @Html.DisplayFor(modelItem => item.CreatedAt)
+          </th>
+          <td>
+            <a asp-action="AnswerEdit" asp-route-id="@item.Id">Edit</a> |
+            <a asp-action="AnswerDetails" asp-route-id="@item.Id">Details</a> |
+            <a asp-action="AnswerDelete" asp-route-id="@item.Id">Delete</a>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+<div>
+  <a asp-action="QuestionEdit" asp-route-id="@Model.Id">Edit</a>
+</div>

@@ -1,0 +1,114 @@
+﻿@using ILA_Server.Models
+@model ILA_Server.Models.Lecture
+
+@{
+  ViewData["Title"] = "Details";
+  Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Details</h1>
+
+<div>
+  <h4>Lecture</h4>
+  <hr />
+  <dl class="row">
+    <dt class="col-sm-2">
+      @Html.DisplayNameFor(model => model.Title)
+    </dt>
+    <dd class="col-sm-10">
+      @Html.DisplayFor(model => model.Title)
+    </dd>
+    <dt class="col-sm-2">
+      @Html.DisplayNameFor(model => model.Description)
+    </dt>
+    <dd class="col-sm-10">
+      @Html.DisplayFor(model => model.Description)
+    </dd>
+    <dt class="col-sm-2">
+      @Html.DisplayNameFor(model => model.Visible)
+    </dt>
+    <dd class="col-sm-10">
+      @Html.DisplayFor(model => model.Visible)
+    </dd>
+    <dt class="col-sm-2">
+      @Html.DisplayNameFor(model => model.Start)
+    </dt>
+    <dd class="col-sm-10">
+      @Html.DisplayFor(model => model.Start)
+    </dd>
+    <dt class="col-sm-2">
+      @Html.DisplayNameFor(model => model.Stop)
+    </dt>
+    <dd class="col-sm-10">
+      @Html.DisplayFor(model => model.Stop)
+    </dd>
+  </dl>
+</div>
+<div>
+  <canvas id="pauseChart" width="400" height="200"></canvas>
+</div>
+<div>
+  <h4>Student Questions</h4>
+  <p>
+    <a asp-action="CreateQuestion" asp-route-id="@Model.Id">Create New Student Question</a>
+  </p>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>
+          @Html.DisplayNameForInnerType((Question q) => q.PointedQuestion)
+        </th>
+        <th>
+          @Html.DisplayNameForInnerType((Question q) => q.User)
+        </th>
+        <th>
+          @Html.DisplayNameForInnerType((Question q) => q.Answers)
+        </th>
+        <th>
+          @Html.DisplayNameForInnerType((Question q) => q.CreatedAt)
+        </th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var item in Model.Questions)
+      {
+        <tr>
+          <td>
+            @Html.DisplayFor(modelItem => item.PointedQuestion)
+          </td>
+          <td>
+            @Html.DisplayFor(modelItem => item.User.LastName), @Html.DisplayFor(modelItem => item.User.FirstName)
+          </td>
+          <td>
+            @Html.DisplayFor(modelItem => item.Answers.Count)
+          </td>
+          <td>
+            @Html.DisplayFor(modelItem => item.CreatedAt)
+          </td>
+          <td>
+            <a asp-action="QuestionEdit" asp-route-id="@item.Id">Edit</a> |
+            <a asp-action="QuestionDetails" asp-route-id="@item.Id">Details</a> |
+            <a asp-action="QuestionDelete" asp-route-id="@item.Id">Delete</a>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+<div>
+  <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
+  <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts{
+  <script>
+    var lectureId = @Model.Id;
+    var lectureStart = '@Model.Start.ToString("s", System.Globalization.CultureInfo.InvariantCulture)';
+    var lectureEnd = '@Model.Stop.ToString("s", System.Globalization.CultureInfo.InvariantCulture)';
+  </script>
+  <script src="~/lib/signalr/dist/browser/signalr.js"></script>
+  <script src="~/lib/moment/min/moment-with-locales.min.js"></script>
+  <script src="~/lib/chart.js/dist/Chart.bundle.min.js"></script>
+  <script src="~/js/lectures/details.js"></script>
+}
