@@ -58,6 +58,7 @@ namespace ILA_Server.Areas.MVC.Controllers
             {
                 return NotFound();
             }
+            course.News = course.News.OrderByDescending(x => x.Id).ToList();
             course.Members = course.Members?.OrderBy(x => x.Member.LastName).ThenBy(x => x.Member.FirstName).ToList();
             course.Lectures = course.Lectures?.OrderBy(x => x.Start).ToList();
 
@@ -307,7 +308,10 @@ namespace ILA_Server.Areas.MVC.Controllers
                 await _context.SaveChangesAsync();
 
                 _fireBaseService.SendPushNotificationMessage(course.Members.Select(x => x.Member).ToList(),
-                    $"{course.Title}: {news.Title}", news.Body);
+                    $"{course.Title}: {news.Title}", news.Body, new Dictionary<string, string>
+                    {
+                        {"newsId",news.Id.ToString()}
+                    });
 
                 return RedirectToAction("Details", new { id = news.CourseId });
             }

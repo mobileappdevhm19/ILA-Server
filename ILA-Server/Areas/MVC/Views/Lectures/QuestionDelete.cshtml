@@ -12,12 +12,18 @@
     <h4>Question</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PointedQuestion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PointedQuestion)
-        </dd>
+      <dt class = "col-sm-2">
+        @Html.DisplayNameFor(model => model.Title)
+      </dt>
+      <dd class = "col-sm-10">
+        @Html.DisplayFor(model => model.Title)
+      </dd>
+      <dt class = "col-sm-2">
+        @Html.DisplayNameFor(model => model.PointedQuestion)
+      </dt>
+      <dd class = "col-sm-10">
+        @Html.DisplayFor(model => model.PointedQuestion)
+      </dd>
     </dl>
     
     <form asp-action="QuestionDelete">

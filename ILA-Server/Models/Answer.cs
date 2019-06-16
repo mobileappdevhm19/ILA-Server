@@ -21,6 +21,9 @@ namespace ILA_Server.Models
         [DefaultValue(0)]
         public int Votes { get; set; }
 
+        [Display(Name = "Created")]
+        public DateTime CreatedAt { get; set; }
+
         public ILAUser User { get; set; }
         public int QuestionId { get; set; }
         public Question Question { get; set; }

@@ -20,6 +20,9 @@ namespace ILA_Server.Models
         [Required]
         public string Body { get; set; }
 
+        [Display(Name = "Created")]
+        public DateTime CreatedAt { get; set; }
+
         [NotMapped]
         public string BodyTrimmed => Body.Length > 50 ? Body.Substring(0, 50) + " ..." : Body;
 

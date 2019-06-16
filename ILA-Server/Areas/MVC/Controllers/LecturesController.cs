@@ -21,6 +21,7 @@ namespace ILA_Server.Areas.MVC.Controllers
     {
         private readonly ILADbContext _context;
         private readonly IFireBaseService _fireBaseService;
+
         public LecturesController(ILADbContext context, IFireBaseService fireBaseService)
         {
             _context = context;
@@ -81,9 +82,11 @@ namespace ILA_Server.Areas.MVC.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Description,Visible,Start,Stop,CourseId")] Lecture lecture)
+        public async Task<IActionResult> Create([Bind("Id,Title,Description,Visible,Start,Stop,CourseId")]
+            Lecture lecture)
         {
-            var course = await _context.Courses.FirstOrDefaultAsync(x => x.Id == lecture.CourseId && x.Owner.Id == GetUserId());
+            var course =
+                await _context.Courses.FirstOrDefaultAsync(x => x.Id == lecture.CourseId && x.Owner.Id == GetUserId());
             if (course == null)
             {
                 return Forbid();
@@ -95,6 +98,7 @@ namespace ILA_Server.Areas.MVC.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(lecture);
         }
 
@@ -111,6 +115,7 @@ namespace ILA_Server.Areas.MVC.Controllers
             {
                 return NotFound();
             }
+
             return View(lecture);
         }
 
@@ -119,14 +124,16 @@ namespace ILA_Server.Areas.MVC.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Visible,Start,Stop,CourseId")] Lecture lecture)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Visible,Start,Stop,CourseId")]
+            Lecture lecture)
         {
             if (id != lecture.Id)
             {
                 return NotFound();
             }
 
-            var lectureWithOwner = await _context.Lectures.Where(x => x.Course.Owner.Id == GetUserId() && x.Id == id).SingleOrDefaultAsync();
+            var lectureWithOwner = await _context.Lectures.Where(x => x.Course.Owner.Id == GetUserId() && x.Id == id)
+                .SingleOrDefaultAsync();
             if (lectureWithOwner == null)
             {
                 return Forbid();
@@ -153,8 +160,10 @@ namespace ILA_Server.Areas.MVC.Controllers
                         throw;
                     }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(lecture);
         }
 
@@ -181,7 +190,8 @@ namespace ILA_Server.Areas.MVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var lecture = await _context.Lectures.FirstOrDefaultAsync(m => m.Id == id && m.Course.Owner.Id == GetUserId());
+            var lecture =
+                await _context.Lectures.FirstOrDefaultAsync(m => m.Id == id && m.Course.Owner.Id == GetUserId());
             if (lecture == null)
             {
                 return NotFound();
@@ -215,11 +225,12 @@ namespace ILA_Server.Areas.MVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateQuestion([Bind("PointedQuestion,LectureId")] Question question)
+        public async Task<IActionResult> CreateQuestion([Bind("Title,PointedQuestion,LectureId")]
+            Question question)
         {
             if (question == null)
                 return NotFound();
-            
+
             Lecture lecture = await _context.Lectures
                 .Include(x => x.Questions)
                 .Where(x => x.Course.Owner.Id == GetUserId())
@@ -243,6 +254,7 @@ namespace ILA_Server.Areas.MVC.Controllers
 
                 return RedirectToAction(nameof(Index));
             }
+
             return View(question);
         }
 
@@ -284,19 +296,21 @@ namespace ILA_Server.Areas.MVC.Controllers
             {
                 return NotFound();
             }
+
             return View(question);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> QuestionEdit(int id, [Bind("Id,PointedQuestion")] Question question)
+        public async Task<IActionResult> QuestionEdit(int id, [Bind("Id,Title,PointedQuestion")] Question question)
         {
             if (id != question.Id)
             {
                 return NotFound();
             }
 
-            var questionWithOwner = await _context.Questions.Where(x => x.Lecture.Course.Owner.Id == GetUserId() && x.Id == id).SingleOrDefaultAsync();
+            var questionWithOwner = await _context.Questions
+                .Where(x => x.Lecture.Course.Owner.Id == GetUserId() && x.Id == id).SingleOrDefaultAsync();
             if (questionWithOwner == null)
             {
                 return Forbid();
@@ -310,6 +324,7 @@ namespace ILA_Server.Areas.MVC.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(questionWithOwner);
         }
 
@@ -321,7 +336,8 @@ namespace ILA_Server.Areas.MVC.Controllers
                 return NotFound();
             }
 
-            var question = await _context.Questions.Where(x => x.Lecture.Course.Owner.Id == GetUserId() && x.Id == id).SingleOrDefaultAsync();
+            var question = await _context.Questions.Where(x => x.Lecture.Course.Owner.Id == GetUserId() && x.Id == id)
+                .SingleOrDefaultAsync();
             if (question == null)
             {
                 return NotFound();
@@ -334,7 +350,8 @@ namespace ILA_Server.Areas.MVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> QuestionDeleteConfirmed(int id)
         {
-            var question = await _context.Questions.Where(x => x.Lecture.Course.Owner.Id == GetUserId() && x.Id == id).SingleOrDefaultAsync();
+            var question = await _context.Questions.Where(x => x.Lecture.Course.Owner.Id == GetUserId() && x.Id == id)
+                .SingleOrDefaultAsync();
             if (question == null)
             {
                 return NotFound();
@@ -386,10 +403,15 @@ namespace ILA_Server.Areas.MVC.Controllers
                 _context.Add(answer);
                 await _context.SaveChangesAsync();
                 _fireBaseService.SendPushNotificationMessageToSingleUser(question.User, "New Answer",
-                    "Someone answerd your question", new Dictionary<string, string> { { "questionId", question.Id.ToString() } });
+                    "Someone answerd your question", new Dictionary<string, string>
+                    {
+                        {"questionId", question.Id.ToString()},
+                        {"answerId", answer.Id.ToString()}
+                    });
 
                 return RedirectToAction(nameof(Index));
             }
+
             return View(answer);
         }
 
@@ -400,7 +422,8 @@ namespace ILA_Server.Areas.MVC.Controllers
                 return NotFound();
             }
 
-            var answer = await _context.Answers.Where(x => x.Question.Lecture.Course.Owner.Id == GetUserId() && x.Id == id).SingleOrDefaultAsync();
+            var answer = await _context.Answers
+                .Where(x => x.Question.Lecture.Course.Owner.Id == GetUserId() && x.Id == id).SingleOrDefaultAsync();
             if (answer == null)
             {
                 return NotFound();
@@ -413,7 +436,8 @@ namespace ILA_Server.Areas.MVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AnswerDeleteConfirmed(int id)
         {
-            var answer = await _context.Answers.Where(x => x.Question.Lecture.Course.Owner.Id == GetUserId() && x.Id == id).SingleOrDefaultAsync();
+            var answer = await _context.Answers
+                .Where(x => x.Question.Lecture.Course.Owner.Id == GetUserId() && x.Id == id).SingleOrDefaultAsync();
             if (answer == null)
             {
                 return NotFound();
@@ -462,6 +486,7 @@ namespace ILA_Server.Areas.MVC.Controllers
             {
                 return NotFound();
             }
+
             return View(answer);
         }
 
@@ -490,6 +515,7 @@ namespace ILA_Server.Areas.MVC.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(answerWithOwner);
         }
 

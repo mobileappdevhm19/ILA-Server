@@ -88,6 +88,16 @@ namespace ILA_Server.Data
                 .WithMany(l => l.PushTokens)
                 .IsRequired();
 
+
+            modelBuilder.Entity<Question>()
+                .Property(b => b.CreatedAt)
+                .HasDefaultValueSql("now()");
+            modelBuilder.Entity<Answer>()
+                .Property(b => b.CreatedAt)
+                .HasDefaultValueSql("now()");
+            modelBuilder.Entity<CourseNews>()
+                .Property(b => b.CreatedAt)
+                .HasDefaultValueSql("now()");
         }
     }
 }

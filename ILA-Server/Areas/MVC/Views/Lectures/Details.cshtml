@@ -64,30 +64,34 @@
         <th>
           @Html.DisplayNameForInnerType((Question q) => q.Answers)
         </th>
+        <th>
+          @Html.DisplayNameForInnerType((Question q) => q.CreatedAt)
+        </th>
         <th></th>
       </tr>
     </thead>
     <tbody>
       @foreach (var item in Model.Questions)
       {
-      <tr>
-        <td>
-          @Html.DisplayFor(modelItem => item.PointedQuestion)
-        </td>
-        <td>
-          @Html.DisplayFor(modelItem => item.User.LastName), @Html.DisplayFor(modelItem => item.User.FirstName)
-        </td>
-        <td>
-          <ul>
+        <tr>
+          <td>
+            @Html.DisplayFor(modelItem => item.PointedQuestion)
+          </td>
+          <td>
+            @Html.DisplayFor(modelItem => item.User.LastName), @Html.DisplayFor(modelItem => item.User.FirstName)
+          </td>
+          <td>
             @Html.DisplayFor(modelItem => item.Answers.Count)
-          </ul>
-        </td>
-        <td>
-          <a asp-action="QuestionEdit" asp-route-id="@item.Id">Edit</a> |
-          <a asp-action="QuestionDetails" asp-route-id="@item.Id">Details</a> |
-          <a asp-action="QuestionDelete" asp-route-id="@item.Id">Delete</a>
-        </td>
-      </tr>
+          </td>
+          <td>
+            @Html.DisplayFor(modelItem => item.CreatedAt)
+          </td>
+          <td>
+            <a asp-action="QuestionEdit" asp-route-id="@item.Id">Edit</a> |
+            <a asp-action="QuestionDetails" asp-route-id="@item.Id">Details</a> |
+            <a asp-action="QuestionDelete" asp-route-id="@item.Id">Delete</a>
+          </td>
+        </tr>
       }
     </tbody>
   </table>

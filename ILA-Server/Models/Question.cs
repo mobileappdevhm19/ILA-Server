@@ -17,6 +17,13 @@ namespace ILA_Server.Models
         [Display(Name = "Question")]
         public string PointedQuestion { get; set; }
 
+        [Required]
+        [Display(Name = "Title")]
+        public string Title { get; set; }
+
+        [Display(Name = "Created")]
+        public DateTime CreatedAt { get; set; }
+
         public int LectureId { get; set; }
         public Lecture Lecture { get; set; }
         public ILAUser User { get; set; }
