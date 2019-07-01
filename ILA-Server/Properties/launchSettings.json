@@ -23,9 +23,11 @@
       "launchBrowser": true,
       "launchUrl": "api/values",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "FORCEHTTPS": "0",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "SWAGGERHOST": "192.168.9.1:5000"
       },
-      "applicationUrl": "http://localhost:5000"
+      "applicationUrl": "http://192.168.9.1:5000"
     }
   }
 }

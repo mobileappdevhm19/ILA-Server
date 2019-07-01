@@ -37,6 +37,15 @@ namespace ILA_Server.Hubs
                 .ToListAsync();
         }
 
+        public async Task<ProfQuestion> GetAnswers(int questionId)
+        {
+            return await _context.ProfQuestion
+                .Where(x => x.Lecture.Course.Owner.Id == GetUserId())
+                .Include(x => x.Answers)
+                .ThenInclude(x => x.ProfQuestionAnswers)
+                .SingleOrDefaultAsync(x => x.Id == questionId);
+        }
+
         private string GetUserId()
         {
             string userId = Context.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;

@@ -1,0 +1,89 @@
+﻿@using ILA_Server.Models
+@model ILA_Server.Models.ProfQuestion
+
+@{
+  ViewData["Title"] = "ProfQuestionDetails";
+  Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Professor Question Details</h1>
+
+<div>
+  <hr />
+  <dl class="row">
+    <dt class="col-sm-2">
+      @Html.DisplayNameFor(model => model.Title)
+    </dt>
+    <dd class="col-sm-10">
+      @Html.DisplayFor(model => model.Title)
+    </dd>
+    <dt class="col-sm-2">
+      @Html.DisplayNameFor(model => model.Question)
+    </dt>
+    <dd class="col-sm-10">
+      @Html.DisplayFor(model => model.Question)
+    </dd>
+    <dt class="col-sm-2">
+      @Html.DisplayNameFor(model => model.CreatedAt)
+    </dt>
+    <dd class="col-sm-10">
+      @Html.DisplayFor(model => model.CreatedAt)
+    </dd>
+  </dl>
+</div>
+<div>
+  <canvas id="answersChart" width="400" height="200"></canvas>
+</div>
+<div>
+  <h4>Answers</h4>
+  <p>
+    <a asp-action="CreateProfAnswer" asp-route-id="@Model.Id">Create Answer</a>
+  </p>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>
+          @Html.DisplayNameForInnerType((ProfAnswer q) => q.Answer)
+        </th>
+        <th>
+          @Html.DisplayNameForInnerType((ProfAnswer q) => q.ProfQuestionAnswers)
+        </th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var item in Model.Answers)
+      {
+        <tr>
+          <td>
+            @Html.DisplayFor(modelItem => item.Answer)
+          </td>
+          <td>
+            @Html.DisplayFor(modelItem => item.ProfQuestionAnswers.Count)
+          </td>
+          <td>
+            <a asp-action="ProfAnswerEdit" asp-route-id="@item.Id">Edit</a> |
+            <a asp-action="ProfAnswerDelete" asp-route-id="@item.Id">Delete</a>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+<div>
+  <a asp-action="ProfQuestionEdit" asp-route-id="@Model.Id">Edit</a> |
+  <a asp-action="Details" asp-route-id="@Model.LectureId">Back to Lecture</a>
+</div>
+
+@section Scripts{
+  <script>
+    var lectureId = @Model.LectureId;
+    var questionId = @Model.Id;
+  </script>
+  <script src="~/lib/signalr/dist/browser/signalr.js"></script>
+  <script src="~/lib/moment/min/moment-with-locales.min.js"></script>
+  <script src="~/lib/chart.js/dist/Chart.bundle.min.js"></script>
+  <script src="~/lib/palette/palette.js"></script>
+  <script src="~/js/lectures/profQuestionDetails.js"></script>
+}

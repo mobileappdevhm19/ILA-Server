@@ -34,5 +34,6 @@ namespace ILA_Server.Models
         public Course Course { get; set; }
         public ICollection<Pause> Pauses { get; set; }
         public ICollection<Question> Questions { get; set; }
+        public ICollection<ProfQuestion> ProfQuestions { get; set; }
     }
 }

@@ -1,0 +1,38 @@
+﻿@model ILA_Server.Models.ProfQuestion
+
+@{
+  ViewData["Title"] = "CreateProfQuestion";
+  Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Create Professor Question</h1>
+<hr />
+<div class="row">
+  <div class="col-md-4">
+    <form asp-action="CreateProfQuestion">
+      <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+      <input type="hidden" asp-for="LectureId" />
+      <div class="form-group">
+        <label asp-for="Title" class="control-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+      </div>
+      <div class="form-group">
+        <label asp-for="Question" class="control-label"></label>
+        <input asp-for="Question" class="form-control" />
+        <span asp-validation-for="Question" class="text-danger"></span>
+      </div>
+      <div class="form-group">
+        <input type="submit" value="Create" class="btn btn-primary" />
+      </div>
+    </form>
+  </div>
+</div>
+
+<div>
+  <a asp-action="Details" asp-route-id="@Model.LectureId">Back to Lecture</a>
+</div>
+
+@section Scripts {
+  @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

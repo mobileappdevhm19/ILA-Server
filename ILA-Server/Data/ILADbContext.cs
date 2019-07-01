@@ -14,6 +14,9 @@ namespace ILA_Server.Data
         public DbSet<Pause> Pauses { get; set; }
         public DbSet<PushTokens> PushTokens { get; set; }
         public DbSet<CourseNews> CourseNews { get; set; }
+        public DbSet<ProfQuestion> ProfQuestion { get; set; }
+        public DbSet<ProfAnswer> ProfAnswer { get; set; }
+        public DbSet<ProfQuestionAnswer> ProfQuestionAnswer { get; set; }
 
         public ILADbContext(DbContextOptions options) : base(options) { }
 
@@ -60,7 +63,7 @@ namespace ILA_Server.Data
             modelBuilder.Entity<CourseNews>()
                 .HasOne(ct => ct.Course)
                 .WithMany(c => c.News)
-                .HasForeignKey(k=>k.CourseId)
+                .HasForeignKey(k => k.CourseId)
                 .IsRequired();
 
             modelBuilder.Entity<Question>()
@@ -88,6 +91,26 @@ namespace ILA_Server.Data
                 .WithMany(l => l.PushTokens)
                 .IsRequired();
 
+            modelBuilder.Entity<ProfQuestion>()
+                .HasOne(q => q.Lecture)
+                .WithMany(l => l.ProfQuestions)
+                .HasForeignKey(k => k.LectureId)
+                .IsRequired();
+            modelBuilder.Entity<ProfAnswer>()
+                .HasOne(q => q.ProfQuestion)
+                .WithMany(l => l.Answers)
+                .IsRequired();
+
+            modelBuilder.Entity<ProfQuestionAnswer>()
+                .HasOne(x => x.ProfAnswer)
+                .WithMany(l => l.ProfQuestionAnswers)
+                .HasForeignKey(k => k.ProfAnswerId)
+                .IsRequired();
+            modelBuilder.Entity<ProfQuestionAnswer>()
+                .HasOne(x => x.User)
+                .WithMany(l => l.ProfAnswers)
+                .IsRequired();
+
 
             modelBuilder.Entity<Question>()
                 .Property(b => b.CreatedAt)
@@ -96,6 +119,12 @@ namespace ILA_Server.Data
                 .Property(b => b.CreatedAt)
                 .HasDefaultValueSql("now()");
             modelBuilder.Entity<CourseNews>()
+                .Property(b => b.CreatedAt)
+                .HasDefaultValueSql("now()");
+            modelBuilder.Entity<ProfQuestionAnswer>()
+                .Property(b => b.CreatedAt)
+                .HasDefaultValueSql("now()");
+            modelBuilder.Entity<ProfQuestion>()
                 .Property(b => b.CreatedAt)
                 .HasDefaultValueSql("now()");
         }

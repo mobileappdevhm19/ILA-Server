@@ -48,6 +48,44 @@
   <canvas id="pauseChart" width="400" height="200"></canvas>
 </div>
 <div>
+  <h4>Professor Questions</h4>
+  <p>
+    <a asp-action="CreateProfQuestion" asp-route-id="@Model.Id">Create New Professor Question</a>
+  </p>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>
+          @Html.DisplayNameForInnerType((ProfQuestion q) => q.Title)
+        </th>
+        <th>
+          @Html.DisplayNameForInnerType((ProfQuestion q) => q.Question)
+        </th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var item in Model.ProfQuestions)
+      {
+        <tr>
+          <td>
+            @Html.DisplayFor(modelItem => item.Title)
+          </td>
+          <td>
+            @Html.DisplayFor(modelItem => item.Question)
+          </td>
+          <td>
+            <a asp-action="ProfQuestionEdit" asp-route-id="@item.Id">Edit</a> |
+            <a asp-action="ProfQuestionDetails" asp-route-id="@item.Id">Details</a> |
+            <a asp-action="ProfQuestionDelete" asp-route-id="@item.Id">Delete</a>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+<div>
   <h4>Student Questions</h4>
   <p>
     <a asp-action="CreateQuestion" asp-route-id="@Model.Id">Create New Student Question</a>
@@ -55,6 +93,9 @@
   <table class="table">
     <thead>
       <tr>
+        <th>
+          @Html.DisplayNameForInnerType((Question q) => q.Title)
+        </th>
         <th>
           @Html.DisplayNameForInnerType((Question q) => q.PointedQuestion)
         </th>
@@ -74,6 +115,9 @@
       @foreach (var item in Model.Questions)
       {
         <tr>
+          <td>
+            @Html.DisplayFor(modelItem => item.Title)
+          </td>
           <td>
             @Html.DisplayFor(modelItem => item.PointedQuestion)
           </td>

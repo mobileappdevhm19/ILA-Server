@@ -18,6 +18,7 @@ namespace ILA_Server.Models
         public ICollection<CourseMember> MemberCourses { get; set; }
         public ICollection<Pause> Pauses { get; set; }
         public ICollection<Question> Questions { get; set; }
+        public ICollection<ProfQuestionAnswer> ProfAnswers { get; set; }
         public ICollection<Answer> Answers { get; set; }
         public ICollection<PushTokens> PushTokens { get; set; }
     }

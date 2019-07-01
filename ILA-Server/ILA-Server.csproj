@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20190630160921_ProfQuestions.cs" />
+    <Compile Remove="Migrations\20190630160921_ProfQuestions.Designer.cs" />
+    <Compile Remove="Migrations\20190701110707_ProfQuestions.cs" />
+    <Compile Remove="Migrations\20190701110707_ProfQuestions.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Dockerfile" />
   </ItemGroup>
 
