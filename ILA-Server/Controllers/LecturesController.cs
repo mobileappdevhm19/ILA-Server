@@ -92,6 +92,7 @@ namespace ILA_Server.Controllers
             pause.Lecture = null;
 
             await _hubContext.Clients.Group(lectureId.ToString()).SendAsync("Pause", pause);
+            pause.TimeStamp = DateTime.Parse(DateTime.Now.ToString());
 
             return pause;
         }
