@@ -57,6 +57,7 @@ namespace ILA_Server.Controllers
                 .Include(x => x.ProfQuestion)
                 .ThenInclude(x => x.Answers)
                 .ThenInclude(x => x.ProfQuestionAnswers)
+                .ThenInclude(x => x.User)
                 .Where(x => x.ProfQuestion.Lecture.Course.Members.Any(y => y.MemberId == GetUserId()))
                 .SingleOrDefaultAsync(x => x.Id == answerId);
 
